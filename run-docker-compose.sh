@@ -12,7 +12,7 @@ function dockerHealth() {
 function waitTillStarts() {
   COUNT=0
   echo "Waiting for mysql to start...\n"
-  sleep 10 # give it a minute before we start polling jBPM.
+  sleep 10 
   while [[ $(dockerHealth "mysql") != "\"healthy\"" ]]; do
     if [[ ${COUNT} -ge 15 ]]; then
       printf "mysql failed to start. Current status [%s].\n" "$(dockerHealth "mysql")" && exit 1
