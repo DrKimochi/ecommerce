@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static drk.shopamos.rest.model.Role.ADMIN;
-import static drk.shopamos.rest.model.Role.CUSTOMER;
+import static drk.shopamos.rest.model.enumerable.Role.ADMIN;
+import static drk.shopamos.rest.model.enumerable.Role.CUSTOMER;
 
 @Entity
 @Data

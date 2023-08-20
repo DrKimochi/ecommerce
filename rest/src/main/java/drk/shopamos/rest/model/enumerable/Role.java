@@ -1,4 +1,4 @@
-package drk.shopamos.rest.model;
+package drk.shopamos.rest.model.enumerable;
 
 public enum Role {
     ADMIN,
