@@ -1,30 +1,39 @@
 package drk.shopamos.rest.config;
 
+import static java.util.Objects.isNull;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
-import jakarta.annotation.PostConstruct;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
+import java.time.Clock;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 @Component
 public class JwtTokenHelper {
-    @Value("${jwt.expiration_seconds}")
-    private Integer expirationSeconds;
-    private SecretKey signKey;
+    private final SecretKey signKey;
+    private final Integer expirationSeconds;
+    private final Clock clock;
 
-    @PostConstruct
-    private void generateSignKey() {
-        signKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    JwtTokenHelper(
+            @Value("${jwt.secret_key}") String secretKey,
+            @Value("${jwt.expiration_seconds}") Integer expirationSeconds,
+            @Autowired Clock clock) {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        this.signKey = Keys.hmacShaKeyFor(keyBytes);
+        this.expirationSeconds = expirationSeconds;
+        this.clock = clock;
     }
 
     public String generateToken(UserDetails userDetails) {
@@ -32,12 +41,15 @@ public class JwtTokenHelper {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        final long currentTimeMillis = System.currentTimeMillis();
+        if (isNull(userDetails)) {
+            throw new IllegalArgumentException("userDetails cannot be null");
+        }
+        long currentMillis = clock.millis();
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(currentTimeMillis))
-                .setExpiration(new Date(currentTimeMillis + expirationSeconds * 1000))
+                .setIssuedAt(new Date(currentMillis))
+                .setExpiration(new Date(currentMillis + expirationSeconds * 1000))
                 .signWith(signKey, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -56,10 +68,15 @@ public class JwtTokenHelper {
     }
 
     private boolean isTokenExpired(String token) {
-        return new Date(System.currentTimeMillis()).after(extractExpiration(token));
+        return new Date(clock.millis()).after(extractExpiration(token));
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(signKey).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+                .setClock(() -> new Date(clock.millis()))
+                .setSigningKey(signKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

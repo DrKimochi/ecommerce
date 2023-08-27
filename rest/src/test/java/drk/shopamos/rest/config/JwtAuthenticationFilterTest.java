@@ -40,9 +40,9 @@ class JwtAuthenticationFilterTest {
     public static final String CUSTOMER_AUTHORITY = "CUSTOMER";
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     private static final String BEARER_TOKEN = "Bearer aToken";
+    private static final String BASIC_TOKEN = "Basic abcdefg";
     private static final String USERNAME = "anUsername";
     private static final String TOKEN = "aToken";
-    public static final String BASIC_TOKEN = "Basic abcdefg";
     @Captor ArgumentCaptor<UsernamePasswordAuthenticationToken> authToken;
     @Mock JwtTokenHelper jwtTokenHelper;
     @Mock UserService userService;
