@@ -53,6 +53,16 @@ class UserTest {
     @DisplayName("isCredentialsNonExpired - returns true")
     void isCredentialsNonExpired_returnsTrue() {
         User user = new User();
-        assertThat(user.isAccountNonExpired(), is(true));
+        assertThat(user.isCredentialsNonExpired(), is(true));
+    }
+
+    @Test
+    @DisplayName("isEnabled - returns isActive")
+    void isEnabled_returnsIsActive() {
+        User user = new User();
+        user.setActive(true);
+        assertThat(user.isEnabled(), is(true));
+        user.setActive(false);
+        assertThat(user.isEnabled(), is(false));
     }
 }
