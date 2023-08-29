@@ -24,8 +24,8 @@ import java.util.Date;
 import java.util.Map;
 
 class JwtTokenHelperTest {
-    Clock mockClock = mock(Clock.class);
-    Clock fixedClock =
+    private final Clock mockClock = mock(Clock.class);
+    private final Clock fixedClock =
             Clock.fixed(Instant.parse("2023-01-01T16:02:42.00Z"), ZoneId.of("Asia/Calcutta"));
     private User user;
     private JwtTokenHelper testee;
@@ -44,7 +44,7 @@ class JwtTokenHelperTest {
 
     @Test
     @DisplayName(
-            "When generateToken is called then returned string is the token base64 encoded with the expected fields")
+            "generateToken - When generateToken is called then returned string is the token base64 encoded with the expected fields")
     void generateToken_tokenIsEncodedCorrectly() {
         String token = testee.generateToken(user);
         assertThat(
@@ -55,7 +55,7 @@ class JwtTokenHelperTest {
 
     @Test
     @DisplayName(
-            "When generateToken with extraClaims is called then returned string is the token base64 encoded with the expected fields plus the extra claims")
+            "generateToken - When generateToken with extraClaims is called then returned string is the token base64 encoded with the expected fields plus the extra claims")
     void generateToken_tokenIsEncodedCorrectlyWithExtraClaims() {
         Map<String, Object> extraClaims = Map.of("aClaimName", "aClaimValue");
         String token = testee.generateToken(extraClaims, user);
@@ -66,13 +66,15 @@ class JwtTokenHelperTest {
     }
 
     @Test
-    @DisplayName("When generateToken with null userDetails is called then IllegalArgumentException is thrown")
+    @DisplayName(
+            "generateToken - When generateToken with null userDetails is called then IllegalArgumentException is thrown")
     void generateToken_withNullUserDetails() {
         assertThrows(IllegalArgumentException.class, () -> testee.generateToken(null));
     }
 
     @Test
-    @DisplayName("When token has correct username and not expired then token is valid")
+    @DisplayName(
+            "isTokenValid - When token has correct username and not expired then token is valid")
     void isTokenValid_whenCorrectUsername_andNotExpired_thenTokenIsValid() {
         String token = testee.generateToken(user);
         boolean isValid = testee.isTokenValid(token, user);
@@ -80,7 +82,8 @@ class JwtTokenHelperTest {
     }
 
     @Test
-    @DisplayName("When token is not expired but has incorrect username then token is not valid")
+    @DisplayName(
+            "isTokenValid - When token is not expired but has incorrect username then token is not valid")
     void isTokenValid_whenIncorrectUsername_thenTokenIsinvalid() {
         String token = testee.generateToken(user);
         user.setEmail("otherUsername@adomain.com");
@@ -89,7 +92,8 @@ class JwtTokenHelperTest {
     }
 
     @Test
-    @DisplayName("When token has correct username but it expired then token is invalid")
+    @DisplayName(
+            "isTokenValid - When token has correct username but it expired then token is invalid")
     void isTokenValid_whenExpired_thenTokenIsinvalid() {
         String token = testee.generateToken(user);
         when(mockClock.millis()).thenReturn(fixedClock.millis() + 200001);
@@ -97,7 +101,7 @@ class JwtTokenHelperTest {
     }
 
     @Test
-    @DisplayName("When extractUsername is called then token subject is returned")
+    @DisplayName("extractUsername - When extractUsername is called then token subject is returned")
     void extractUsername_returnsTokenSubject() throws JSONException {
         String token = testee.generateToken(user);
         String username = testee.extractUsername(token);
@@ -106,7 +110,8 @@ class JwtTokenHelperTest {
     }
 
     @Test
-    @DisplayName("When extractExpiration is called then token expiration is returned")
+    @DisplayName(
+            "extractExpiration - When extractExpiration is called then token expiration is returned")
     void extractExpiration_returnsTokenExpiration() throws JSONException {
         String token = testee.generateToken(user);
         Date expiration = testee.extractExpiration(token);
