@@ -46,7 +46,7 @@ class AuthenticationServiceTest {
         String expectedJwtToken = testee.login(username, password);
 
         verify(authManager, times(1)).authenticate(authToken);
-        assertThat(expectedJwtToken, is(jwtToken));
+        assertThat(jwtToken, is(expectedJwtToken));
     }
 
     @Test

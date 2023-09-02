@@ -4,6 +4,8 @@ import drk.shopamos.rest.controller.request.AuthenticationRequest;
 import drk.shopamos.rest.controller.response.AuthenticationResponse;
 import drk.shopamos.rest.service.AuthenticationService;
 
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(
-            @RequestBody AuthenticationRequest request) {
+            @Valid @RequestBody AuthenticationRequest request) {
         String jwtToken = authService.login(request.getUsername(), request.getPassword());
         return ResponseEntity.ok(AuthenticationResponse.builder().jwtToken(jwtToken).build());
     }
