@@ -12,13 +12,13 @@ import java.util.Locale;
 import java.util.Optional;
 
 public abstract class ControllerTest {
+    private static final String PROPERTY_FORM_FIELD = "error.form.field";
+    private static final String PROPERTY_FIELD_EMPTY = "error.form.field.empty";
+    private static final String PROPERTY_FIELD_EMAIL = "error.form.field.email";
+    private static final String PROPERTY_BODY_UNREADABLE = "error.request.body.unreadable";
     protected static String SOME_USERNAME = "username@domain.com";
     protected static String SOME_PASSWORD = "abc123";
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
-
-    protected static String PROPERTY_FORM_FIELD = "error.form.field";
-    protected static String PROPERTY_FIELD_EMPTY = "error.form.field.empty";
-    protected static String PROPERTY_FIELD_EMAIL = "error.form.field.email";
     @Autowired private MessageSource messageSource;
 
     protected void asserEmailValidation(ErrorResponse errorResponse, String fieldName) {
@@ -31,6 +31,10 @@ public abstract class ControllerTest {
 
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
         assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_FORM_FIELD)));
+    }
+
+    protected void assertRequestBodyUnreadableError(ErrorResponse errorResponse) {
+        assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_BODY_UNREADABLE)));
     }
 
     private void assertFieldErrorValidation(
@@ -56,4 +60,6 @@ public abstract class ControllerTest {
     private String getMessageFromBundle(String propertyName) {
         return messageSource.getMessage(propertyName, null, Locale.getDefault());
     }
+
+
 }

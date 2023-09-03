@@ -34,12 +34,27 @@ class AuthenticationControllerTest extends ControllerTest {
     @MockBean private AuthenticationService authService;
 
     @Test
+    @DisplayName("login - when body is missing then return 400 response with message")
+    void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
+        MvcResult mvcResult =
+                mockMvc.perform(post("/v1/auth/login").contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isBadRequest())
+                        .andReturn();
+
+        ErrorResponse errorResponse =
+                objectMapper.readValue(
+                        mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
+
+        assertRequestBodyUnreadableError(errorResponse);
+    }
+
+    @Test
     @DisplayName(
             "login - when null username or passsword then return 400 response with field validation errors")
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
         MvcResult mvcResult =
                 mockMvc.perform(
-                                post("/api/v1/auth/login")
+                                post("/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(
@@ -64,7 +79,7 @@ class AuthenticationControllerTest extends ControllerTest {
         when(authService.login(SOME_USERNAME, SOME_PASSWORD)).thenReturn(SOME_TOKEN);
         MvcResult mvcResult =
                 mockMvc.perform(
-                                post("/api/v1/auth/login")
+                                post("/v1/auth/login")
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(
                                                 objectMapper.writeValueAsString(
