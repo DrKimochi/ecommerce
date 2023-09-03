@@ -29,7 +29,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setup() {
-        email = "ausername@adomain.com";
+        email = "username@domain.com";
         user = new User();
         user.setEmail(email);
     }

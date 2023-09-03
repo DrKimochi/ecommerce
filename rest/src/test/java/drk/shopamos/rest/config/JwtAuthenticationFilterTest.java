@@ -39,10 +39,10 @@ class JwtAuthenticationFilterTest {
 
     public static final String CUSTOMER_AUTHORITY = "CUSTOMER";
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
-    private static final String BEARER_TOKEN = "Bearer aToken";
-    private static final String BASIC_TOKEN = "Basic abcdefg";
-    private static final String USERNAME = "anUsername";
-    private static final String TOKEN = "aToken";
+    private static final String SOME_BEARER_TOKEN = "Bearer abc.def.ghi";
+    private static final String SOME_BASIC_TOKEN = "Basic abcdefghi";
+    private static final String SOME_USERNAME = "username@domain.com";
+    private static final String SOME_TOKEN = "abc.def.ghi";
     @Captor ArgumentCaptor<UsernamePasswordAuthenticationToken> authToken;
     @Mock JwtTokenHelper jwtTokenHelper;
     @Mock UserService userService;
@@ -75,7 +75,7 @@ class JwtAuthenticationFilterTest {
             throws Exception {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(AUTHORIZATION_HEADER_NAME, BASIC_TOKEN);
+        request.addHeader(AUTHORIZATION_HEADER_NAME, SOME_BASIC_TOKEN);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         testee.doFilterInternal(request, response, filterChain);
@@ -90,10 +90,10 @@ class JwtAuthenticationFilterTest {
     void doFilterInternal_whenNotUsername_thenSecurityContextNotSet() throws Exception {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(AUTHORIZATION_HEADER_NAME, BEARER_TOKEN);
+        request.addHeader(AUTHORIZATION_HEADER_NAME, SOME_BEARER_TOKEN);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        when(jwtTokenHelper.extractUsername(TOKEN)).thenReturn(USERNAME);
+        when(jwtTokenHelper.extractUsername(SOME_TOKEN)).thenReturn(SOME_USERNAME);
         when(securityContext.getAuthentication()).thenReturn(mock(Authentication.class));
 
         testee.doFilterInternal(request, response, filterChain);
@@ -108,13 +108,13 @@ class JwtAuthenticationFilterTest {
     void doFilterInternal_whenInvalidToken_thenSecurityContextNotSet() throws Exception {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(AUTHORIZATION_HEADER_NAME, BEARER_TOKEN);
+        request.addHeader(AUTHORIZATION_HEADER_NAME, SOME_BEARER_TOKEN);
         MockHttpServletResponse response = new MockHttpServletResponse();
         User user = new User();
 
-        when(jwtTokenHelper.extractUsername(TOKEN)).thenReturn(USERNAME);
-        when(userService.loadUserByUsername(USERNAME)).thenReturn(user);
-        when(jwtTokenHelper.isTokenValid(TOKEN, user)).thenReturn(false);
+        when(jwtTokenHelper.extractUsername(SOME_TOKEN)).thenReturn(SOME_USERNAME);
+        when(userService.loadUserByUsername(SOME_USERNAME)).thenReturn(user);
+        when(jwtTokenHelper.isTokenValid(SOME_TOKEN, user)).thenReturn(false);
 
         testee.doFilterInternal(request, response, filterChain);
 
@@ -127,15 +127,15 @@ class JwtAuthenticationFilterTest {
     void doFilterInternal_whenValidToken_thenSecurityContextIsSet() throws Exception {
 
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(AUTHORIZATION_HEADER_NAME, BEARER_TOKEN);
+        request.addHeader(AUTHORIZATION_HEADER_NAME, SOME_BEARER_TOKEN);
         MockHttpServletResponse response = new MockHttpServletResponse();
         User user = new User();
         List<SimpleGrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority(CUSTOMER_AUTHORITY));
 
-        when(jwtTokenHelper.extractUsername(TOKEN)).thenReturn(USERNAME);
-        when(userService.loadUserByUsername(USERNAME)).thenReturn(user);
-        when(jwtTokenHelper.isTokenValid(TOKEN, user)).thenReturn(true);
+        when(jwtTokenHelper.extractUsername(SOME_TOKEN)).thenReturn(SOME_USERNAME);
+        when(userService.loadUserByUsername(SOME_USERNAME)).thenReturn(user);
+        when(jwtTokenHelper.isTokenValid(SOME_TOKEN, user)).thenReturn(true);
 
         testee.doFilterInternal(request, response, filterChain);
 
