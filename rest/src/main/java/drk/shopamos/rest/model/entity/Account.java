@@ -19,7 +19,7 @@ import static drk.shopamos.rest.model.enumerable.Role.CUSTOMER;
 @Entity
 @Data
 @NoArgsConstructor
-public class User implements UserDetails {
+public class Account implements UserDetails {
     @Id
     @GeneratedValue
     private Integer id;

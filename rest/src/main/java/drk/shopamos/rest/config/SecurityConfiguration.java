@@ -1,6 +1,6 @@
 package drk.shopamos.rest.config;
 
-import drk.shopamos.rest.service.UserService;
+import drk.shopamos.rest.service.AccountService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final UserService userService;
+    private final AccountService accountService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,7 +35,7 @@ public class SecurityConfiguration {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userService);
+        authProvider.setUserDetailsService(accountService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

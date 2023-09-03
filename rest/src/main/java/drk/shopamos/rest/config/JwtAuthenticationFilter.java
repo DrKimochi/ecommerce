@@ -3,8 +3,8 @@ package drk.shopamos.rest.config;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import drk.shopamos.rest.model.entity.User;
-import drk.shopamos.rest.service.UserService;
+import drk.shopamos.rest.model.entity.Account;
+import drk.shopamos.rest.service.AccountService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTH_HEADER_NAME = "Authorization";
     private static final String AUTH_HEADER_PREFIX = "Bearer ";
     private final JwtTokenHelper jwtTokenHelper;
-    private final UserService userService;
+    private final AccountService accountService;
 
     @Override
     protected void doFilterInternal(
@@ -43,10 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwtToken = authHeader.substring(AUTH_HEADER_PREFIX.length());
         final String username = jwtTokenHelper.extractUsername(jwtToken);
         if (nonNull(username) && isNull(SecurityContextHolder.getContext().getAuthentication())) {
-            User user = userService.loadUserByUsername(username);
-            if (jwtTokenHelper.isTokenValid(jwtToken, user)) {
+            Account account = accountService.loadUserByUsername(username);
+            if (jwtTokenHelper.isTokenValid(jwtToken, account)) {
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                account, null, account.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

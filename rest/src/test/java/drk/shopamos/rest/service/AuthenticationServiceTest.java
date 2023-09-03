@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import drk.shopamos.rest.config.JwtTokenHelper;
-import drk.shopamos.rest.model.entity.User;
-import drk.shopamos.rest.repository.UserRepository;
+import drk.shopamos.rest.model.entity.Account;
+import drk.shopamos.rest.repository.AccountRepository;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,12 +27,12 @@ import java.util.Optional;
 class AuthenticationServiceTest {
     private final String username = "ausername@adomain.com";
     private final String password = "apassword123";
-    private final User user = new User();
+    private final Account account = new Account();
     private final UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(username, password);
 
     @Mock private AuthenticationManager authManager;
-    @Mock private UserRepository userRepository;
+    @Mock private AccountRepository accountRepository;
     @Mock private JwtTokenHelper jwtTokenHelper;
     @InjectMocks private AuthenticationService testee;
 
@@ -40,8 +40,8 @@ class AuthenticationServiceTest {
     @DisplayName("login - when authentication is successful then a jwt token string is returned")
     void login_returnsJwtToken() {
         final String jwtToken = "atoken";
-        when(userRepository.findByEmail(username)).thenReturn(Optional.of(user));
-        when(jwtTokenHelper.generateToken(user)).thenReturn(jwtToken);
+        when(accountRepository.findByEmail(username)).thenReturn(Optional.of(account));
+        when(jwtTokenHelper.generateToken(account)).thenReturn(jwtToken);
 
         String expectedJwtToken = testee.login(username, password);
 
@@ -52,7 +52,7 @@ class AuthenticationServiceTest {
     @Test
     @DisplayName("login - when username cannot be found by email then exception is thrown")
     void login_throwsExceptionWhenUserNotFound() {
-        when(userRepository.findByEmail(username)).thenReturn(Optional.empty());
+        when(accountRepository.findByEmail(username)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () -> testee.login(username, password));
     }
