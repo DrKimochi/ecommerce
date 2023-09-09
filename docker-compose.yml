@@ -1,0 +1,31 @@
+# Use root/example as user/password credentials
+version: '3.4'
+
+services:
+
+  db:
+    image: mysql
+    container_name: mysql
+    command: --default-authentication-plugin=caching_sha2_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password1!
+    healthcheck:
+      start_period: 5s
+      test: [
+          "CMD-SHELL",
+          "mysqladmin ping --silent"
+      ]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 8082:8080
+
+volumes:
+  mysql_local_data:
