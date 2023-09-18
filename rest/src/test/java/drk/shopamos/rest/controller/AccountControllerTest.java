@@ -1,7 +1,12 @@
 package drk.shopamos.rest.controller;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
+import static drk.shopamos.rest.mother.AccountMother.assertAccountRequestEqualsAccountEntity;
+import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
+import static drk.shopamos.rest.mother.AccountMother.buildAccountRequestNami;
+
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import drk.shopamos.rest.argument.BadEmailArgumentProvider;
@@ -13,6 +18,7 @@ import drk.shopamos.rest.controller.request.AccountRequest;
 import drk.shopamos.rest.controller.response.ErrorResponse;
 import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.service.AccountService;
+import drk.shopamos.rest.service.exception.EntityNotFoundException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +30,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MvcResult;
 
 @WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @ContextConfiguration(
@@ -43,8 +48,7 @@ class AccountControllerTest extends ControllerTest {
     @Test
     @DisplayName("createAccount - when body is missing then return 400 response with message")
     void createAccount_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/accounts", null);
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/accounts", null);
         assertRequestBodyUnreadableError(errorResponse);
     }
 
@@ -52,8 +56,7 @@ class AccountControllerTest extends ControllerTest {
     @DisplayName("createAccount - when name is missing then return 400 response with message")
     void createAccount_whenNameMissing_thenReturn400ErrorResponse() throws Exception {
         AccountRequest request = AccountRequest.builder().build();
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/accounts", request);
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/accounts", request);
         assertEmptyFieldValidation(errorResponse, "name");
     }
 
@@ -62,9 +65,8 @@ class AccountControllerTest extends ControllerTest {
     @DisplayName("createAccount - when email has bad format then return 400 response with message")
     void createAccount_whenEmailBadFormat_thenReturn400ErrorResponse(String email)
             throws Exception {
-        AccountRequest request = AccountRequest.builder().name(SOME_NAME).email(email).build();
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/accounts", request);
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        AccountRequest request = AccountRequest.builder().name(NAMI_NAME).email(email).build();
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/accounts", request);
         assertEmailValidation(errorResponse);
     }
 
@@ -76,13 +78,12 @@ class AccountControllerTest extends ControllerTest {
             throws Exception {
         AccountRequest request =
                 AccountRequest.builder()
-                        .name(SOME_NAME)
-                        .email(SOME_EMAIL)
+                        .name(NAMI_NAME)
+                        .email(NAMI_EMAIL)
                         .password(password)
                         .build();
 
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/accounts", request);
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/accounts", request);
         assertPasswordValidation(errorResponse);
     }
 
@@ -90,26 +91,28 @@ class AccountControllerTest extends ControllerTest {
     @DisplayName(
             "createAccount - when required data provided then call service layer and return 200 response")
     void createAccount_wheRequiredDataProvided_thenReturn200Response() throws Exception {
-        AccountRequest request =
-                AccountRequest.builder()
-                        .name(SOME_NAME)
-                        .email(SOME_EMAIL)
-                        .password(SOME_PASSWORD)
-                        .isActive(true)
-                        .isAdmin(false)
-                        .build();
+        AccountRequest request = buildAccountRequestNami();
 
         postMvcRequestExpectingStatus200("/v1/accounts", request);
 
         verify(accountService).createAccount(accountArgumentCaptor.capture());
-        assertAccountEntityMapped(request, accountArgumentCaptor.getValue());
+        assertAccountRequestEqualsAccountEntity(request, accountArgumentCaptor.getValue());
     }
 
-    void assertAccountEntityMapped(AccountRequest accountRequest, Account account) {
-        assertThat(accountRequest.getName(), is(account.getName()));
-        assertThat(accountRequest.getEmail(), is(account.getEmail()));
-        assertThat(accountRequest.getPassword(), is(account.getPassword()));
-        assertThat(accountRequest.isActive(), is(account.isActive()));
-        assertThat(accountRequest.isAdmin(), is(account.isAdmin()));
+    @Test
+    @DisplayName(
+            "createAccount - when service Throws EntityNotFoundException then return 400 Response with message")
+    void createAccount_whenServiceThrowsEntityNotFoundException_thenReturn400WithMessage()
+            throws Exception {
+        Account account = buildAccountNami();
+        AccountRequest request = buildAccountRequestNami();
+
+        doThrow(new EntityNotFoundException(messageProvider, account.getEmail()))
+                .when(accountService)
+                .createAccount(account);
+
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/accounts", request);
+
+        assertEntityNotFoundError(errorResponse, account.getEmail());
     }
 }

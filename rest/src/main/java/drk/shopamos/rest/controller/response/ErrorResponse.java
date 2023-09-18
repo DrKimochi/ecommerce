@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
+    private String exceptionId;
     private String message;
     private List<FieldValidationError> fieldValidationErrors;
 

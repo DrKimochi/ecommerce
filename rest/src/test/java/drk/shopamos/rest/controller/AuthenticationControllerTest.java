@@ -1,5 +1,8 @@
 package drk.shopamos.rest.controller;
 
+import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
@@ -36,9 +39,7 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     @DisplayName("login - when body is missing then return 400 response with message")
     void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/auth/login", null);
-
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/auth/login", null);
 
         assertRequestBodyUnreadableError(errorResponse);
     }
@@ -49,9 +50,7 @@ class AuthenticationControllerTest extends ControllerTest {
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
         AuthenticationRequest body = buildRequest(null, null);
 
-        MvcResult mvcResult = postMvcRequestExpectingStatus400("/v1/auth/login", body);
-
-        ErrorResponse errorResponse = readErrorResponse(mvcResult);
+        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/auth/login", body);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
         assertInvalidFormError(errorResponse);
@@ -63,9 +62,9 @@ class AuthenticationControllerTest extends ControllerTest {
     @DisplayName(
             "login - when username and password provided then call service layer and return 200 response with jwt token")
     void login_whenRequiredDataProvided_thenReturn200Response() throws Exception {
-        when(authService.login(SOME_EMAIL, SOME_PASSWORD)).thenReturn(SOME_TOKEN);
+        when(authService.login(NAMI_EMAIL, NAMI_PWD)).thenReturn(SOME_TOKEN);
 
-        AuthenticationRequest body = buildRequest(SOME_EMAIL, SOME_PASSWORD);
+        AuthenticationRequest body = buildRequest(NAMI_EMAIL, NAMI_PWD);
         MvcResult mvcResult = postMvcRequestExpectingStatus200("/v1/auth/login", body);
 
         AuthenticationResponse response = readAuthenticationResponse(mvcResult);

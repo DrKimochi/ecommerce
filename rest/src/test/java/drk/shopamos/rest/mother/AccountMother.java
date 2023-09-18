@@ -4,13 +4,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import drk.shopamos.rest.controller.request.AccountRequest;
 import drk.shopamos.rest.model.entity.Account;
 
 public class AccountMother {
 
     public static final String NAMI_EMAIL = "nami@mugiwara.com";
     public static final String NAMI_NAME = "Nami";
-    public static final String NAMI_PWD = "oranges123";
+    public static final String NAMI_PWD = "Oranges123";
     public static final String LUFFY_EMAIL = "luffy@mugiwara.com";
     public static final String LUFFY_NAME = "Monkey D Luffy";
     public static final String LUFFY_PWD = "meat123";
@@ -23,8 +24,27 @@ public class AccountMother {
         account.setEmail(NAMI_EMAIL);
         account.setPassword(NAMI_PWD);
         account.setActive(true);
-        account.setAdmin(true);
+        account.setAdmin(false);
         return account;
+    }
+
+    public static AccountRequest buildAccountRequestNami() {
+        return AccountRequest.builder()
+                .name(NAMI_NAME)
+                .email(NAMI_EMAIL)
+                .password(NAMI_PWD)
+                .isActive(true)
+                .isAdmin(false)
+                .build();
+    }
+
+    public static void assertAccountRequestEqualsAccountEntity(
+            AccountRequest accountRequest, Account account) {
+        assertThat(accountRequest.getName(), is(account.getName()));
+        assertThat(accountRequest.getPassword(), is(account.getPassword()));
+        assertThat(accountRequest.getEmail(), is(account.getEmail()));
+        assertThat(accountRequest.isAdmin(), is(account.isAdmin()));
+        assertThat(accountRequest.isActive(), is(account.isActive()));
     }
 
     public static void assertAccountDataNami(Account account) {
@@ -34,7 +54,7 @@ public class AccountMother {
         assertThat(account.getPassword(), is(NAMI_PWD));
         assertThat(account.getName(), is(NAMI_NAME));
         assertThat(account.isActive(), is(true));
-        assertThat(account.isAdmin(), is(true));
+        assertThat(account.isAdmin(), is(false));
     }
 
     public static void assertAccountDataLuffy(Account account) {

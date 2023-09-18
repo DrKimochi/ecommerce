@@ -5,6 +5,7 @@ import static drk.shopamos.rest.config.MessageProvider.MSG_FORM_FIELD;
 
 import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.response.ErrorResponse;
+import drk.shopamos.rest.service.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,16 @@ public class ControllerExceptionHandler {
     ErrorResponse handleHttpMessageNotReadableException() {
         return ErrorResponse.builder()
                 .message(messageProvider.getMessage(MSG_BODY_UNREADABLE))
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BusinessException.class)
+    @ResponseBody
+    ErrorResponse handleBusinessException(BusinessException exception) {
+        return ErrorResponse.builder()
+                .exceptionId(exception.getExceptionId())
+                .message(exception.getMessage())
                 .build();
     }
 }

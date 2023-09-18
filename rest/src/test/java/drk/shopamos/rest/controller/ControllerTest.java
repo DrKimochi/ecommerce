@@ -2,6 +2,7 @@ package drk.shopamos.rest.controller;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,57 +24,62 @@ import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 public abstract class ControllerTest {
-    private static final String PROPERTY_FORM_FIELD = "error.form.field";
-    private static final String PROPERTY_FIELD_EMPTY = "error.form.field.empty";
-    private static final String PROPERTY_FIELD_EMAIL = "error.form.field.email";
-    private static final String PROPERTY_FIELD_PASSWORD = "error.form.field.password";
-    private static final String PROPERTY_BODY_UNREADABLE = "error.request.body.unreadable";
-    protected static String SOME_EMAIL = "username@domain.com";
-    protected static String SOME_NAME = "John Doe";
-    protected static String SOME_PASSWORD = "abcDEF123";
+    private static final String MSG_FORM_FIELD = "error.form.field";
+    private static final String MSG_FIELD_EMPTY = "error.form.field.empty";
+    private static final String MSG_FIELD_EMAIL = "error.form.field.email";
+    private static final String MSG_FIELD_PASSWORD = "error.form.field.password";
+    private static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
+    private static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
     @Autowired protected MockMvc mockMvc;
     @Autowired protected ObjectMapper objectMapper;
-    @Autowired private MessageProvider messageProvider;
+    @Autowired protected MessageProvider messageProvider;
 
     protected void assertEmailValidation(ErrorResponse errorResponse) {
-        assertFieldErrorValidation(errorResponse, "email", PROPERTY_FIELD_EMAIL);
+        assertFieldErrorValidation(errorResponse, "email", MSG_FIELD_EMAIL);
     }
 
     protected void assertPasswordValidation(ErrorResponse errorResponse) {
-        assertFieldErrorValidation(errorResponse, "password", PROPERTY_FIELD_PASSWORD);
+        assertFieldErrorValidation(errorResponse, "password", MSG_FIELD_PASSWORD);
     }
 
     protected void assertEmptyFieldValidation(ErrorResponse errorResponse, String fieldName) {
-        assertFieldErrorValidation(errorResponse, fieldName, PROPERTY_FIELD_EMPTY);
+        assertFieldErrorValidation(errorResponse, fieldName, MSG_FIELD_EMPTY);
     }
 
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(PROPERTY_FORM_FIELD)));
+        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_FORM_FIELD)));
     }
 
     protected void assertRequestBodyUnreadableError(ErrorResponse errorResponse) {
+        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_BODY_UNREADABLE)));
+    }
+
+    protected void assertEntityNotFoundError(ErrorResponse errorResponse, String entityName) {
+        assertThat(errorResponse.getExceptionId(), is(notNullValue()));
         assertThat(
                 errorResponse.getMessage(),
-                is(messageProvider.getMessage(PROPERTY_BODY_UNREADABLE)));
+                is(messageProvider.getMessage(MSG_ENTITY_NOT_FOUND, entityName)));
     }
 
-    protected ErrorResponse readErrorResponse(MvcResult mvcResult)
-            throws UnsupportedEncodingException, JsonProcessingException {
-        return objectMapper.readValue(
-                mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
-    }
-
-    protected MvcResult postMvcRequestExpectingStatus400(String url, Object body) throws Exception {
-        return mockMvc.perform(getPostRequestBuilder(url, body))
-                .andExpect(status().isBadRequest())
-                .andReturn();
+    protected ErrorResponse postMvcRequestExpectingStatus400(String url, Object body)
+            throws Exception {
+        return readErrorResponse(
+                mockMvc.perform(getPostRequestBuilder(url, body))
+                        .andExpect(status().isBadRequest())
+                        .andReturn());
     }
 
     protected MvcResult postMvcRequestExpectingStatus200(String url, Object body) throws Exception {
         return mockMvc.perform(getPostRequestBuilder(url, body))
                 .andExpect(status().isOk())
                 .andReturn();
+    }
+
+    private ErrorResponse readErrorResponse(MvcResult mvcResult)
+            throws UnsupportedEncodingException, JsonProcessingException {
+        return objectMapper.readValue(
+                mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
     }
 
     private MockHttpServletRequestBuilder getPostRequestBuilder(String url, Object body)
