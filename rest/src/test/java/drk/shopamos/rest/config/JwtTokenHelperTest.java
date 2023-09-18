@@ -1,5 +1,8 @@
 package drk.shopamos.rest.config;
 
+import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,6 +27,12 @@ import java.util.Date;
 import java.util.Map;
 
 class JwtTokenHelperTest {
+    private static final String SECRET_KEY =
+            "5ffcbb58dc3c78d4296752a9bec8a73bc1e632a12b2b4410540c1e6d5102694";
+    private static final String TOKEN =
+            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuYW1pQG11Z2l3YXJhLmNvbSIsImlhdCI6MTY3MjU4ODk2MiwiZXhwIjoxNjcyNTg5MTYyfQ.mFD_2y7w1s0JPLBvTMTmorImEGjeu--euT3ADd9PTTA";
+    private static final String TOKEN_WITH_CLAIM =
+            "eyJhbGciOiJIUzI1NiJ9.eyJhQ2xhaW1OYW1lIjoiYUNsYWltVmFsdWUiLCJzdWIiOiJuYW1pQG11Z2l3YXJhLmNvbSIsImlhdCI6MTY3MjU4ODk2MiwiZXhwIjoxNjcyNTg5MTYyfQ.6t-v4ePExQwF-1InsNQYOprqgY0IfGRoPufLKE-bPN8";
     private final Clock mockClock = mock(Clock.class);
     private final Clock fixedClock =
             Clock.fixed(Instant.parse("2023-01-01T16:02:42.00Z"), ZoneId.of("Asia/Calcutta"));
@@ -32,13 +41,8 @@ class JwtTokenHelperTest {
 
     @BeforeEach
     void setup() {
-        account = new Account();
-        account.setEmail("aUsername@adomain.com");
-        testee =
-                new JwtTokenHelper(
-                        "5ffcbb58dc3c78d4296752a9bec8a73bc1e632a12b2b4410540c1e6d5102694",
-                        200,
-                        mockClock);
+        account = buildAccountNami();
+        testee = new JwtTokenHelper(SECRET_KEY, 200, mockClock);
         when(mockClock.millis()).thenReturn(fixedClock.millis());
     }
 
@@ -47,10 +51,7 @@ class JwtTokenHelperTest {
             "generateToken - When generateToken is called then returned string is the token base64 encoded with the expected fields")
     void generateToken_tokenIsEncodedCorrectly() {
         String token = testee.generateToken(account);
-        assertThat(
-                token,
-                is(
-                        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhVXNlcm5hbWVAYWRvbWFpbi5jb20iLCJpYXQiOjE2NzI1ODg5NjIsImV4cCI6MTY3MjU4OTE2Mn0.-cLfCW0L_XONOecW85eRMNCTNj2wJN35xYJr9EYXxBk"));
+        assertThat(token, is(TOKEN));
     }
 
     @Test
@@ -59,10 +60,7 @@ class JwtTokenHelperTest {
     void generateToken_tokenIsEncodedCorrectlyWithExtraClaims() {
         Map<String, Object> extraClaims = Map.of("aClaimName", "aClaimValue");
         String token = testee.generateToken(extraClaims, account);
-        assertThat(
-                token,
-                is(
-                        "eyJhbGciOiJIUzI1NiJ9.eyJhQ2xhaW1OYW1lIjoiYUNsYWltVmFsdWUiLCJzdWIiOiJhVXNlcm5hbWVAYWRvbWFpbi5jb20iLCJpYXQiOjE2NzI1ODg5NjIsImV4cCI6MTY3MjU4OTE2Mn0.arha2y7KfOVwnh1qT2JELhk24Zx1r0Z0oWlnP-k9dXk"));
+        assertThat(token, is(TOKEN_WITH_CLAIM));
     }
 
     @Test
@@ -86,7 +84,7 @@ class JwtTokenHelperTest {
             "isTokenValid - When token is not expired but has incorrect username then token is not valid")
     void isTokenValid_whenIncorrectUsername_thenTokenIsinvalid() {
         String token = testee.generateToken(account);
-        account.setEmail("otherUsername@adomain.com");
+        account.setEmail(VIVI_EMAIL);
         boolean isValid = testee.isTokenValid(token, account);
         assertThat(isValid, is(false));
     }
