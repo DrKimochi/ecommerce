@@ -59,7 +59,7 @@ class AuthenticationControllerTest extends ControllerTest {
     void login_whenRequiredDataProvided_thenReturn200Response() throws Exception {
         when(authService.login(SOME_EMAIL, SOME_PASSWORD)).thenReturn(SOME_TOKEN);
 
-        AuthenticationRequest body = buildRequest("username@domain.com", "abc123");
+        AuthenticationRequest body = buildRequest(SOME_EMAIL, SOME_PASSWORD);
         MvcResult mvcResult = postMvcRequestExpectingStatus200("/v1/auth/login", body);
 
         AuthenticationResponse response = readAuthenticationResponse(mvcResult);

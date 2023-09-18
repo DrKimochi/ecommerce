@@ -10,5 +10,6 @@ import org.mapstruct.Mapping;
 public interface AccountMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
     Account map(AccountRequest accountRequest);
 }

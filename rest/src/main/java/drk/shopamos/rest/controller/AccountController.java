@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +21,9 @@ public class AccountController {
     private final AccountService accountService;
     private final AccountMapper accountMapper;
 
-    @PostMapping()
-    public void createAccount(@Valid @RequestBody AccountRequest accountRequest) {
+    @PostMapping
+    public ResponseEntity<Void> createAccount(@Valid @RequestBody AccountRequest accountRequest) {
         accountService.createAccount(accountMapper.map(accountRequest));
+        return ResponseEntity.ok().build();
     }
 }
