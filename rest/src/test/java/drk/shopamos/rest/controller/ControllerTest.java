@@ -10,17 +10,16 @@ import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.response.ErrorResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Locale;
 import java.util.Optional;
 
 public abstract class ControllerTest {
@@ -35,7 +34,7 @@ public abstract class ControllerTest {
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
     @Autowired protected MockMvc mockMvc;
     @Autowired protected ObjectMapper objectMapper;
-    @Autowired private MessageSource messageSource;
+    @Autowired private MessageProvider messageProvider;
 
     protected void assertEmailValidation(ErrorResponse errorResponse) {
         assertFieldErrorValidation(errorResponse, "email", PROPERTY_FIELD_EMAIL);
@@ -50,11 +49,13 @@ public abstract class ControllerTest {
     }
 
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_FORM_FIELD)));
+        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(PROPERTY_FORM_FIELD)));
     }
 
     protected void assertRequestBodyUnreadableError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_BODY_UNREADABLE)));
+        assertThat(
+                errorResponse.getMessage(),
+                is(messageProvider.getMessage(PROPERTY_BODY_UNREADABLE)));
     }
 
     protected ErrorResponse readErrorResponse(MvcResult mvcResult)
@@ -93,7 +94,9 @@ public abstract class ControllerTest {
 
         assertThat(fieldError.isPresent(), is(true));
 
-        assertThat(fieldError.get().getFieldMessage(), is(getMessageFromBundle(fieldMsgProperty)));
+        assertThat(
+                fieldError.get().getFieldMessage(),
+                is(messageProvider.getMessage(fieldMsgProperty)));
     }
 
     private Optional<ErrorResponse.FieldValidationError> findFieldValidationError(
@@ -103,9 +106,5 @@ public abstract class ControllerTest {
                         fieldValidationError ->
                                 fieldValidationError.getFieldName().equals(fieldName))
                 .findFirst();
-    }
-
-    private String getMessageFromBundle(String propertyName) {
-        return messageSource.getMessage(propertyName, null, Locale.getDefault());
     }
 }
