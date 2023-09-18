@@ -13,6 +13,8 @@ import java.util.Locale;
 public class MessageProvider {
     public static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
     public static final String MSG_ENTITY_EXISTS = "error.business.entity.exists";
+    public static final String MSG_FORM_FIELD = "error.form.field";
+    public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
 
     private final Locale locale = LocaleContextHolder.getLocale();
     private final MessageSource messageSource;

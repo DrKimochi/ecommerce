@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
 import drk.shopamos.rest.controller.request.AuthenticationRequest;
 import drk.shopamos.rest.controller.response.AuthenticationResponse;
@@ -23,7 +24,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.io.UnsupportedEncodingException;
 
 @WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(classes = {AuthenticationController.class, ControllerExceptionHandler.class})
+@ContextConfiguration(
+        classes = {
+            AuthenticationController.class,
+            ControllerExceptionHandler.class,
+            MessageProvider.class
+        })
 class AuthenticationControllerTest extends ControllerTest {
     @MockBean private AuthenticationService authService;
 

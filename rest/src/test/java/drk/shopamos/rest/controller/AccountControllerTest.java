@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 
 import drk.shopamos.rest.argument.BadEmailArgumentProvider;
 import drk.shopamos.rest.argument.BadPasswordArgumentProvider;
+import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
 import drk.shopamos.rest.controller.mapper.AccountMapperImpl;
 import drk.shopamos.rest.controller.request.AccountRequest;
@@ -30,7 +31,8 @@ import org.springframework.test.web.servlet.MvcResult;
         classes = {
             AccountController.class,
             ControllerExceptionHandler.class,
-            AccountMapperImpl.class
+            AccountMapperImpl.class,
+            MessageProvider.class
         })
 class AccountControllerTest extends ControllerTest {
 
