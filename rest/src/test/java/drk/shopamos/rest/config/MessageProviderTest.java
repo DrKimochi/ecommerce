@@ -1,8 +1,9 @@
 package drk.shopamos.rest.config;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,10 +20,15 @@ import java.util.Locale;
 class MessageProviderTest {
     private static final String MSG_CODE = "msgCode";
     private static final String MSG_ARG = "msgArg";
-    private final MockedStatic<LocaleContextHolder> localeContextHolder =
+    private static final MockedStatic<LocaleContextHolder> localeContextHolder =
             Mockito.mockStatic(LocaleContextHolder.class);
     @Mock private Locale locale;
     @Mock private MessageSource messageSource;
+
+    @AfterAll
+    static void tearDown() {
+        localeContextHolder.close();
+    }
 
     @Test
     @DisplayName("getMessage - calls MessageSource with correct arguments ")
