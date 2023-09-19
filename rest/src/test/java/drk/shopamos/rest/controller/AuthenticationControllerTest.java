@@ -26,13 +26,13 @@ import java.io.UnsupportedEncodingException;
 @WebMvcTest
 @ContextConfiguration(classes = {AuthenticationController.class})
 class AuthenticationControllerTest extends ControllerTest {
+    private static final String LOGIN_URL = "/v1/auth/login";
     @MockBean private AuthenticationService authService;
 
     @Test
     @DisplayName("login - when body is missing then return 400 response with message")
     void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400("/v1/auth/login", null, null);
+        ErrorResponse errorResponse = sendPostRequestExpectingStatus400(LOGIN_URL, null, null);
 
         assertRequestBodyUnreadableError(errorResponse);
     }
@@ -43,13 +43,12 @@ class AuthenticationControllerTest extends ControllerTest {
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
         AuthenticationRequest body = buildRequest(null, null);
 
-        ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400("/v1/auth/login", null, body);
+        ErrorResponse errorResponse = sendPostRequestExpectingStatus400(LOGIN_URL, null, body);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
         assertInvalidFormError(errorResponse);
-        assertEmptyFieldValidation(errorResponse, "username");
-        assertEmptyFieldValidation(errorResponse, "password");
+        assertEmptyFieldError(errorResponse, "username");
+        assertEmptyFieldError(errorResponse, "password");
     }
 
     @Test
@@ -59,7 +58,7 @@ class AuthenticationControllerTest extends ControllerTest {
         when(authService.login(NAMI_EMAIL, NAMI_PWD)).thenReturn(SOME_TOKEN);
 
         AuthenticationRequest body = buildRequest(NAMI_EMAIL, NAMI_PWD);
-        MvcResult mvcResult = sendPostRequestAssertingStatus200("/v1/auth/login", null, body);
+        MvcResult mvcResult = sendPostRequestExpectingStatus200(LOGIN_URL, null, body);
 
         AuthenticationResponse response = readAuthenticationResponse(mvcResult);
 

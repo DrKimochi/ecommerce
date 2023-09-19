@@ -7,6 +7,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +24,15 @@ public class MessageProvider {
         return messageSource.getMessage(msgCode, null, locale);
     }
 
-    public String getMessage(String msgCode, String msgArg) {
-        return messageSource.getMessage(msgCode, new String[] {msgArg}, locale);
+    public String getMessage(String msgCode, String param) {
+        return messageSource.getMessage(msgCode, new String[] {param}, locale);
+    }
+
+    public String getMessageWithNamedParams(String msgCode, Map<String, String> namedParams) {
+        String resultMessage = getMessage(msgCode);
+        for (Map.Entry<String, String> entry : namedParams.entrySet()) {
+            resultMessage = resultMessage.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+        return resultMessage;
     }
 }

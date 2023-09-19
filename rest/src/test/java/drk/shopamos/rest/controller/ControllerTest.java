@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 import java.util.Optional;
 
 @ContextConfiguration(
@@ -49,6 +50,7 @@ public abstract class ControllerTest {
     private static final String MSG_FIELD_EMPTY = "error.form.field.empty";
     private static final String MSG_FIELD_EMAIL = "error.form.field.email";
     private static final String MSG_FIELD_PASSWORD = "error.form.field.password";
+    private static final String MSG_FIELD_MAX_LENGTH = "error.form.field.maxlength";
     private static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     private static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
@@ -65,16 +67,27 @@ public abstract class ControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    protected void assertEmailValidation(ErrorResponse errorResponse) {
-        assertFieldErrorValidation(errorResponse, "email", MSG_FIELD_EMAIL);
+    protected void assertEmailFieldError(ErrorResponse errorResponse) {
+        String message = messageProvider.getMessage(MSG_FIELD_EMAIL, "email");
+        assertFormFieldError(errorResponse, "email", message);
     }
 
-    protected void assertPasswordValidation(ErrorResponse errorResponse) {
-        assertFieldErrorValidation(errorResponse, "password", MSG_FIELD_PASSWORD);
+    protected void assertPasswordFieldError(ErrorResponse errorResponse) {
+        String message = messageProvider.getMessage(MSG_FIELD_PASSWORD, "password");
+        assertFormFieldError(errorResponse, "password", message);
     }
 
-    protected void assertEmptyFieldValidation(ErrorResponse errorResponse, String fieldName) {
-        assertFieldErrorValidation(errorResponse, fieldName, MSG_FIELD_EMPTY);
+    protected void assertEmptyFieldError(ErrorResponse errorResponse, String fieldName) {
+        String message = messageProvider.getMessage(MSG_FIELD_EMPTY, fieldName);
+        assertFormFieldError(errorResponse, fieldName, message);
+    }
+
+    protected void assertMaxLengthFieldError(
+            ErrorResponse errorResponse, String fieldName, String length) {
+        String message =
+                messageProvider.getMessageWithNamedParams(
+                        MSG_FIELD_MAX_LENGTH, Map.of("max", length));
+        assertFormFieldError(errorResponse, fieldName, message);
     }
 
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
@@ -92,7 +105,7 @@ public abstract class ControllerTest {
                 is(messageProvider.getMessage(MSG_ENTITY_NOT_FOUND, entityName)));
     }
 
-    protected ErrorResponse sendPostRequestAssertingStatus400(
+    protected ErrorResponse sendPostRequestExpectingStatus400(
             String url, String jwtToken, Object body) throws Exception {
         return readErrorResponse(
                 mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
@@ -100,14 +113,14 @@ public abstract class ControllerTest {
                         .andReturn());
     }
 
-    protected MvcResult sendPostRequestAssertingStatus200(String url, String jwtToken, Object body)
+    protected MvcResult sendPostRequestExpectingStatus200(String url, String jwtToken, Object body)
             throws Exception {
         return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
                 .andExpect(status().isOk())
                 .andReturn();
     }
 
-    protected MvcResult sendPostRequestAssertingStatus403(String url, String jwtToken, Object body)
+    protected MvcResult sendPostRequestExpectingStatus403(String url, String jwtToken, Object body)
             throws Exception {
         return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
                 .andExpect(status().isForbidden())
@@ -133,17 +146,15 @@ public abstract class ControllerTest {
         return requestBuilder;
     }
 
-    private void assertFieldErrorValidation(
-            ErrorResponse errorResponse, String fieldName, String fieldMsgProperty) {
+    private void assertFormFieldError(
+            ErrorResponse errorResponse, String fieldName, String message) {
 
         Optional<ErrorResponse.FieldValidationError> fieldError =
                 findFieldValidationError(errorResponse, fieldName);
 
         assertThat(fieldError.isPresent(), is(true));
 
-        assertThat(
-                fieldError.get().getFieldMessage(),
-                is(messageProvider.getMessage(fieldMsgProperty)));
+        assertThat(fieldError.get().getFieldMessage(), is(message));
     }
 
     private Optional<ErrorResponse.FieldValidationError> findFieldValidationError(

@@ -3,6 +3,7 @@ package drk.shopamos.rest.controller.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class AccountRequest {
 
     @NotEmpty(message = "{error.form.field.empty}")
+    @Size(max = 100, message = "{error.form.field.maxlength}")
     private String name;
 
     @NotEmpty(message = "{error.form.field.empty}")

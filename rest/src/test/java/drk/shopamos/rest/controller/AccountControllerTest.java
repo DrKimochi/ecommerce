@@ -37,19 +37,20 @@ final class AccountControllerTest extends ControllerTest {
     @DisplayName("createAccount - when body is missing then return 400 response with message")
     void createAccount_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
         ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400(CREATE_URL, withAdminToken(), null);
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), null);
         assertRequestBodyUnreadableError(errorResponse);
     }
 
     @Test
-    @DisplayName("createAccount - when name, email or password are missing then return 400 response with message")
+    @DisplayName(
+            "createAccount - when name, email or password are missing then return 400 response with message")
     void createAccount_whenNameEmailPwdMissing_thenReturn400ErrorResponse() throws Exception {
         AccountRequest requestBody = AccountRequest.builder().build();
         ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400(CREATE_URL, withAdminToken(), requestBody);
-        assertEmptyFieldValidation(errorResponse, "name");
-        assertEmptyFieldValidation(errorResponse, "email");
-        assertEmptyFieldValidation(errorResponse, "password");
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+        assertEmptyFieldError(errorResponse, "name");
+        assertEmptyFieldError(errorResponse, "email");
+        assertEmptyFieldError(errorResponse, "password");
     }
 
     @ParameterizedTest
@@ -59,8 +60,18 @@ final class AccountControllerTest extends ControllerTest {
             throws Exception {
         AccountRequest requestBody = AccountRequest.builder().name(NAMI_NAME).email(email).build();
         ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400(CREATE_URL, withAdminToken(), requestBody);
-        assertEmailValidation(errorResponse);
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+        assertEmailFieldError(errorResponse);
+    }
+
+    @Test
+    @DisplayName("createAccount - when name too long then return 400 response with message")
+    void createAccount_whenNameTooLong_thenReturn400ErrorResponse() throws Exception {
+        String longName = new String(new char[101]);
+        AccountRequest requestBody = AccountRequest.builder().name(longName).build();
+        ErrorResponse errorResponse =
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+        assertMaxLengthFieldError(errorResponse, "name", "100");
     }
 
     @ParameterizedTest
@@ -77,8 +88,8 @@ final class AccountControllerTest extends ControllerTest {
                         .build();
 
         ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400(CREATE_URL, withAdminToken(), requestBody);
-        assertPasswordValidation(errorResponse);
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+        assertPasswordFieldError(errorResponse);
     }
 
     @Test
@@ -86,7 +97,7 @@ final class AccountControllerTest extends ControllerTest {
             "createAccount - when required data provided and user role is ADMIN then call service layer and return 200 response")
     void createAccount_whenRequiredDataProvided_thenReturn200Response() throws Exception {
         AccountRequest requestBody = buildAccountRequestNami();
-        sendPostRequestAssertingStatus200(CREATE_URL, withAdminToken(), requestBody);
+        sendPostRequestExpectingStatus200(CREATE_URL, withAdminToken(), requestBody);
         verify(accountService).createAccount(accountArgumentCaptor.capture());
         assertAccountRequestEqualsAccountEntity(requestBody, accountArgumentCaptor.getValue());
     }
@@ -96,14 +107,14 @@ final class AccountControllerTest extends ControllerTest {
             "createAccount - when required data provided but user role is CUSTOMER then return 403 response")
     void createAccount_whenUserRoleIsCustomer_thenReturn403Response() throws Exception {
         AccountRequest requestBody = buildAccountRequestNami();
-        sendPostRequestAssertingStatus403(CREATE_URL, withCustomerToken(), requestBody);
+        sendPostRequestExpectingStatus403(CREATE_URL, withCustomerToken(), requestBody);
     }
 
     @Test
     @DisplayName("createAccount - when not authenticated then return 403 response")
     void createAccount_whenNotAuthenticated_thenReturn403Response() throws Exception {
         AccountRequest requestBody = buildAccountRequestNami();
-        sendPostRequestAssertingStatus403(CREATE_URL, null, requestBody);
+        sendPostRequestExpectingStatus403(CREATE_URL, null, requestBody);
     }
 
     @Test
@@ -119,7 +130,7 @@ final class AccountControllerTest extends ControllerTest {
                 .createAccount(account);
 
         ErrorResponse errorResponse =
-                sendPostRequestAssertingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
 
         assertEntityNotFoundError(errorResponse, account.getEmail());
     }
