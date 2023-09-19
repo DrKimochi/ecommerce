@@ -33,7 +33,6 @@ public class AccountService implements UserDetailsService {
         if (accountRepository.existsByEmail(account.getEmail())) {
             throw new EntityExistsException(msgProvider, account.getEmail());
         }
-
         accountRepository.save(account);
     }
 }

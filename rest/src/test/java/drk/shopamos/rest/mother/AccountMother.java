@@ -33,8 +33,8 @@ public class AccountMother {
                 .name(NAMI_NAME)
                 .email(NAMI_EMAIL)
                 .password(NAMI_PWD)
-                .isActive(true)
-                .isAdmin(false)
+                .active(true)
+                .admin(false)
                 .build();
     }
 

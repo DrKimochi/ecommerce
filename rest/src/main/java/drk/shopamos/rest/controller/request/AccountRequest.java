@@ -18,15 +18,17 @@ public class AccountRequest {
     @NotEmpty(message = "{error.form.field.empty}")
     private String name;
 
+    @NotEmpty(message = "{error.form.field.empty}")
     @Email(message = "{error.form.field.email}")
     private String email;
 
+    @NotEmpty(message = "{error.form.field.empty}")
     @Pattern(
             regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$",
             message = "{error.form.field.password}")
     private String password;
 
-    private boolean isAdmin;
+    private boolean admin;
 
-    private boolean isActive;
+    private boolean active;
 }
