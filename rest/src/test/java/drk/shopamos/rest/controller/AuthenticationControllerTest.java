@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import drk.shopamos.rest.config.MessageProvider;
-import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
 import drk.shopamos.rest.controller.request.AuthenticationRequest;
 import drk.shopamos.rest.controller.response.AuthenticationResponse;
 import drk.shopamos.rest.controller.response.ErrorResponse;
@@ -18,7 +16,6 @@ import drk.shopamos.rest.service.AuthenticationService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -26,31 +23,28 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.UnsupportedEncodingException;
 
-@WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(
-        classes = {
-            AuthenticationController.class,
-            ControllerExceptionHandler.class,
-            MessageProvider.class
-        })
+@WebMvcTest
+@ContextConfiguration(classes = {AuthenticationController.class})
 class AuthenticationControllerTest extends ControllerTest {
     @MockBean private AuthenticationService authService;
 
     @Test
     @DisplayName("login - when body is missing then return 400 response with message")
     void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/auth/login", null);
+        ErrorResponse errorResponse =
+                sendPostRequestAssertingStatus400("/v1/auth/login", null, null);
 
         assertRequestBodyUnreadableError(errorResponse);
     }
 
     @Test
     @DisplayName(
-            "login - when null username or passsword then return 400 response with field validation errors")
+            "login - when null username or password then return 400 response with field validation errors")
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
         AuthenticationRequest body = buildRequest(null, null);
 
-        ErrorResponse errorResponse = postMvcRequestExpectingStatus400("/v1/auth/login", body);
+        ErrorResponse errorResponse =
+                sendPostRequestAssertingStatus400("/v1/auth/login", null, body);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
         assertInvalidFormError(errorResponse);
@@ -65,7 +59,7 @@ class AuthenticationControllerTest extends ControllerTest {
         when(authService.login(NAMI_EMAIL, NAMI_PWD)).thenReturn(SOME_TOKEN);
 
         AuthenticationRequest body = buildRequest(NAMI_EMAIL, NAMI_PWD);
-        MvcResult mvcResult = postMvcRequestExpectingStatus200("/v1/auth/login", body);
+        MvcResult mvcResult = sendPostRequestAssertingStatus200("/v1/auth/login", null, body);
 
         AuthenticationResponse response = readAuthenticationResponse(mvcResult);
 

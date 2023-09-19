@@ -1,8 +1,11 @@
 package drk.shopamos.rest.controller;
 
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,11 +14,20 @@ import static java.util.Objects.nonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import drk.shopamos.rest.config.JwtAuthenticationFilter;
+import drk.shopamos.rest.config.JwtTokenHelper;
 import drk.shopamos.rest.config.MessageProvider;
+import drk.shopamos.rest.config.SecurityConfiguration;
+import drk.shopamos.rest.config.ShopamosConfiguration;
+import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
 import drk.shopamos.rest.controller.response.ErrorResponse;
+import drk.shopamos.rest.model.entity.Account;
+import drk.shopamos.rest.service.AccountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -23,6 +35,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
+@ContextConfiguration(
+        classes = {
+            ControllerExceptionHandler.class,
+            MessageProvider.class,
+            ShopamosConfiguration.class,
+            SecurityConfiguration.class,
+            JwtAuthenticationFilter.class,
+            JwtTokenHelper.class
+        })
 public abstract class ControllerTest {
     private static final String MSG_FORM_FIELD = "error.form.field";
     private static final String MSG_FIELD_EMPTY = "error.form.field.empty";
@@ -31,9 +52,18 @@ public abstract class ControllerTest {
     private static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     private static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
-    @Autowired protected MockMvc mockMvc;
-    @Autowired protected ObjectMapper objectMapper;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    protected ObjectMapper objectMapper;
+
     @Autowired protected MessageProvider messageProvider;
+    @Autowired protected JwtTokenHelper jwtTokenHelper;
+    @MockBean protected AccountService accountService;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private MockMvc mockMvc;
 
     protected void assertEmailValidation(ErrorResponse errorResponse) {
         assertFieldErrorValidation(errorResponse, "email", MSG_FIELD_EMAIL);
@@ -62,17 +92,25 @@ public abstract class ControllerTest {
                 is(messageProvider.getMessage(MSG_ENTITY_NOT_FOUND, entityName)));
     }
 
-    protected ErrorResponse postMvcRequestExpectingStatus400(String url, Object body)
-            throws Exception {
+    protected ErrorResponse sendPostRequestAssertingStatus400(
+            String url, String jwtToken, Object body) throws Exception {
         return readErrorResponse(
-                mockMvc.perform(getPostRequestBuilder(url, body))
+                mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
                         .andExpect(status().isBadRequest())
                         .andReturn());
     }
 
-    protected MvcResult postMvcRequestExpectingStatus200(String url, Object body) throws Exception {
-        return mockMvc.perform(getPostRequestBuilder(url, body))
+    protected MvcResult sendPostRequestAssertingStatus200(String url, String jwtToken, Object body)
+            throws Exception {
+        return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
                 .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    protected MvcResult sendPostRequestAssertingStatus403(String url, String jwtToken, Object body)
+            throws Exception {
+        return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
+                .andExpect(status().isForbidden())
                 .andReturn();
     }
 
@@ -82,10 +120,13 @@ public abstract class ControllerTest {
                 mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
     }
 
-    private MockHttpServletRequestBuilder getPostRequestBuilder(String url, Object body)
-            throws Exception {
+    private MockHttpServletRequestBuilder getPostRequestBuilder(
+            String url, String jwtToken, Object body) throws Exception {
         MockHttpServletRequestBuilder requestBuilder =
                 post(url).contentType(MediaType.APPLICATION_JSON);
+        if (nonNull(jwtToken)) {
+            requestBuilder = requestBuilder.header("authorization", "Bearer " + jwtToken);
+        }
         if (nonNull(body)) {
             requestBuilder = requestBuilder.content(objectMapper.writeValueAsString(body));
         }
@@ -112,5 +153,21 @@ public abstract class ControllerTest {
                         fieldValidationError ->
                                 fieldValidationError.getFieldName().equals(fieldName))
                 .findFirst();
+    }
+
+    protected String withAdminToken() {
+        return getJwtToken(true);
+    }
+
+    protected String withCustomerToken() {
+        return getJwtToken(false);
+    }
+
+    private String getJwtToken(boolean isAdmin) {
+        Account account = new Account();
+        account.setEmail(LUFFY_EMAIL);
+        account.setAdmin(isAdmin);
+        when(accountService.loadUserByUsername(LUFFY_EMAIL)).thenReturn(account);
+        return jwtTokenHelper.generateToken(account);
     }
 }
