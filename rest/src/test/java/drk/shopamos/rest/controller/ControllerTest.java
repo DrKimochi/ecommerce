@@ -46,13 +46,15 @@ import java.util.Optional;
             JwtTokenHelper.class
         })
 public abstract class ControllerTest {
+    //TODO: Move messages to ServiceTet
     private static final String MSG_FORM_FIELD = "error.form.field";
     private static final String MSG_FIELD_EMPTY = "error.form.field.empty";
     private static final String MSG_FIELD_EMAIL = "error.form.field.email";
     private static final String MSG_FIELD_PASSWORD = "error.form.field.password";
     private static final String MSG_FIELD_MAX_LENGTH = "error.form.field.maxlength";
     private static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
-    private static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
+    private static final String MSG_NOT_FOUND_ID = "error.business.entity.notfound.id";
+    private static final String MSG_EXISTS_EMAIL = "error.business.entity.exists.email";
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -102,7 +104,7 @@ public abstract class ControllerTest {
         assertThat(errorResponse.getExceptionId(), is(notNullValue()));
         assertThat(
                 errorResponse.getMessage(),
-                is(messageProvider.getMessage(MSG_ENTITY_NOT_FOUND, entityName)));
+                is(messageProvider.getMessage(MSG_NOT_FOUND_ID, entityName)));
     }
 
     protected ErrorResponse sendPostRequestExpectingStatus400(

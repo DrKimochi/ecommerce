@@ -1,14 +1,21 @@
 package drk.shopamos.rest.service;
 
-import static drk.shopamos.rest.config.MessageProvider.MSG_ENTITY_NOT_FOUND;
+import static drk.shopamos.rest.config.MessageProvider.MSG_CANNOT_DEACTIVATE_ACCOUNT;
+import static drk.shopamos.rest.config.MessageProvider.MSG_CANNOT_DEMOTE;
+import static drk.shopamos.rest.config.MessageProvider.MSG_EXISTS_EMAIL;
+import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_ID;
+import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_USER;
 
 import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.repository.AccountRepository;
 import drk.shopamos.rest.service.exception.EntityExistsException;
+import drk.shopamos.rest.service.exception.EntityNotFoundException;
+import drk.shopamos.rest.service.exception.IllegalDataException;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -26,13 +33,47 @@ public class AccountService implements UserDetailsService {
                 .orElseThrow(
                         () ->
                                 new UsernameNotFoundException(
-                                        msgProvider.getMessage(MSG_ENTITY_NOT_FOUND, username)));
+                                        msgProvider.getMessage(MSG_NOT_FOUND_USER, username)));
     }
 
     public void createAccount(Account account) {
-        if (accountRepository.existsByEmail(account.getEmail())) {
-            throw new EntityExistsException(msgProvider, account.getEmail());
-        }
+        validateEmailDoesNotExist(account.getEmail());
         accountRepository.save(account);
+        //TODO: eoncode password
+    }
+
+    public void updateAccount(Account account) {
+        validateIdExists(account.getId());
+        validatePrincipalNotDeactivatingHimself(account.getId(), account.isActive());
+        validatePrincipalNotDemotingHimself(account.getId(),account.isAdmin());
+        accountRepository.save(account);
+    }
+
+    private void validateEmailDoesNotExist(String email) {
+        if (accountRepository.existsByEmail(email)) {
+            throw new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
+        }
+    }
+
+    private void validateIdExists(Integer id) {
+        if (!accountRepository.existsById(id)) {
+            throw new EntityNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_ID, id));
+        }
+    }
+
+    private void validatePrincipalNotDeactivatingHimself(Integer accountId, boolean isActive) {
+        if (!isActive && getPrincipal().getId().equals(accountId)) {
+            throw new IllegalDataException(msgProvider.getMessage(MSG_CANNOT_DEACTIVATE_ACCOUNT));
+        }
+    }
+
+    private void validatePrincipalNotDemotingHimself(Integer accountId, boolean isAdmin) {
+        if (!isAdmin && getPrincipal().getId().equals(accountId)) {
+            throw new IllegalDataException(msgProvider.getMessage(MSG_CANNOT_DEMOTE));
+        }
+    }
+
+    private Account getPrincipal() {
+        return (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

@@ -37,12 +37,9 @@ class MessageProviderTest {
     @DisplayName("getMessage - calls MessageSource with correct arguments ")
     void getMessage_callsMessageSourceWithCorrectArguments() {
         localeContextHolder.when(LocaleContextHolder::getLocale).thenReturn(locale);
-
         MessageProvider testee = new MessageProvider(messageSource);
-
         testee.getMessage(MSG_CODE, MSG_PARAM);
-        verify(messageSource).getMessage(MSG_CODE, new String[] {MSG_PARAM}, locale);
-
+        verify(messageSource).getMessage(MSG_CODE, new Object[] {MSG_PARAM}, locale);
         testee.getMessage(MSG_CODE);
         verify(messageSource).getMessage(MSG_CODE, null, locale);
     }
@@ -54,9 +51,7 @@ class MessageProviderTest {
         localeContextHolder.when(LocaleContextHolder::getLocale).thenReturn(locale);
         when(messageSource.getMessage(MSG_CODE, null, locale))
                 .thenReturn("This field must be within {min} and {max} characters");
-
         MessageProvider testee = new MessageProvider(messageSource);
-
         String message =
                 testee.getMessageWithNamedParams(MSG_CODE, Map.of("min", "3", "max", "12"));
         assertThat(message, is("This field must be within 3 and 12 characters"));

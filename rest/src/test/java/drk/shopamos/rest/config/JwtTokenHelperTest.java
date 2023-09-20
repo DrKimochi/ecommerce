@@ -1,7 +1,7 @@
 package drk.shopamos.rest.config;
 
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
-import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
+import static drk.shopamos.rest.mother.AccountMother.buildCustomerNami;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,7 +41,7 @@ class JwtTokenHelperTest {
 
     @BeforeEach
     void setup() {
-        account = buildAccountNami();
+        account = buildCustomerNami();
         testee = new JwtTokenHelper(SECRET_KEY, 200, mockClock);
         when(mockClock.millis()).thenReturn(fixedClock.millis());
     }

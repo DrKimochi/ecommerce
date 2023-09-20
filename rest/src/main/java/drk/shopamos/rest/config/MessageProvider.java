@@ -12,10 +12,14 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class MessageProvider {
-    public static final String MSG_ENTITY_NOT_FOUND = "error.business.entity.notfound";
-    public static final String MSG_ENTITY_EXISTS = "error.business.entity.exists";
+    public static final String MSG_NOT_FOUND_ID = "error.business.entity.notfound.id";
+    public static final String MSG_NOT_FOUND_USER = "error.business.entity.notfound.username";
+    public static final String MSG_EXISTS_EMAIL = "error.business.entity.exists.email";
     public static final String MSG_FORM_FIELD = "error.form.field";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
+    public static final String MSG_CANNOT_DEMOTE = "error.business.entity.cannot.demote";
+    public static final String MSG_CANNOT_DEACTIVATE_ACCOUNT =
+            "error.business.entity.cannot.deactivate.account";
 
     private final Locale locale = LocaleContextHolder.getLocale();
     private final MessageSource messageSource;
@@ -24,8 +28,8 @@ public class MessageProvider {
         return messageSource.getMessage(msgCode, null, locale);
     }
 
-    public String getMessage(String msgCode, String param) {
-        return messageSource.getMessage(msgCode, new String[] {param}, locale);
+    public String getMessage(String msgCode, Object param) {
+        return messageSource.getMessage(msgCode, new Object[] {param}, locale);
     }
 
     public String getMessageWithNamedParams(String msgCode, Map<String, String> namedParams) {

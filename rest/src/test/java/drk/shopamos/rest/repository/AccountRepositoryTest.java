@@ -6,7 +6,7 @@ import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.ZORO_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.assertAccountDataLuffy;
 import static drk.shopamos.rest.mother.AccountMother.assertAccountDataNami;
-import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
+import static drk.shopamos.rest.mother.AccountMother.buildNewCustomerNami;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,6 +41,7 @@ class AccountRepositoryTest {
         Optional<Account> accountOpt = testee.findByEmail(VIVI_EMAIL);
         assertThat(accountOpt.isEmpty(), is(true));
     }
+
     @Test
     @DisplayName("existsByEmail - returns true when email exists")
     void existsByEmail_whenEmailExists_returnsTrue() {
@@ -54,9 +55,21 @@ class AccountRepositoryTest {
     }
 
     @Test
-    @DisplayName("createAccount - when object has required data, then it is saved to database ")
+    @DisplayName("existsById - returns true when id exists")
+    void existsById_whenIdExists_returnsTrue() {
+        assertThat(testee.existsById(1), is(true));
+    }
+
+    @Test
+    @DisplayName("existsById - returns false when id does not exist")
+    void existsById_whenIdDoesNotExist_returnsFalse() {
+        assertThat(testee.existsById(100), is(false));
+    }
+
+    @Test
+    @DisplayName("save - when object has required data, then it is saved to database ")
     void save_whenValidParameter_thenSavesToDb() {
-        testee.save(buildAccountNami());
+        testee.save(buildNewCustomerNami());
         Optional<Account> expectedSavedAccountOpt = testee.findByEmail(NAMI_EMAIL);
         assertThat(expectedSavedAccountOpt.isPresent(), is(true));
         assertAccountDataNami(expectedSavedAccountOpt.get());
@@ -65,7 +78,7 @@ class AccountRepositoryTest {
     @Test
     @DisplayName("save - when email already exists then throw error ")
     void save_whenEmailExists_thenThrowError() {
-        Account account = buildAccountNami();
+        Account account = buildNewCustomerNami();
         account.setEmail(ZORO_EMAIL);
         assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
     }
@@ -73,18 +86,16 @@ class AccountRepositoryTest {
     @Test
     @DisplayName("save - when email missing then throw error")
     void save_whenEmailMissing_thenThrowError() {
-        Account account = buildAccountNami();
+        Account account = buildNewCustomerNami();
         account.setEmail(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
     }
-    
+
     @Test
     @DisplayName("save - when password missing then throw error")
     void save_whenPasswordMissing_thenThrowError() {
-        Account account = buildAccountNami();
+        Account account = buildNewCustomerNami();
         account.setPassword(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
     }
-    
-    
 }
