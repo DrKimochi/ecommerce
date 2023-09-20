@@ -30,6 +30,6 @@ public class AccountRequest {
             message = "{error.form.field.password}")
     private String password;
 
-    private Boolean admin;
-    private Boolean active;
+    private Boolean admin = false;
+    private Boolean active = true;
 }

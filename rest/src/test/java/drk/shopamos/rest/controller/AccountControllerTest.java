@@ -2,6 +2,7 @@ package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
 import static drk.shopamos.rest.mother.AccountMother.assertAccountDataNami;
 import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
 import static drk.shopamos.rest.mother.AccountMother.buildAccountRequestNami;
@@ -96,7 +97,13 @@ final class AccountControllerTest extends ControllerTest {
     @DisplayName(
             "createAccount - when required data provided and user role is ADMIN then call service layer and return 200 response")
     void createAccount_whenRequiredDataProvided_thenReturn200Response() throws Exception {
-        AccountRequest requestBody = buildAccountRequestNami();
+        AccountRequest requestBody =
+                AccountRequest.builder()
+                        .name(NAMI_NAME)
+                        .email(NAMI_EMAIL)
+                        .password(NAMI_PWD)
+                        .build();
+        System.err.println(requestBody);
         sendPostRequestExpectingStatus200(CREATE_URL, withAdminToken(), requestBody);
         verify(accountService).createAccount(accountArgumentCaptor.capture());
         assertAccountDataNami(accountArgumentCaptor.getValue());
