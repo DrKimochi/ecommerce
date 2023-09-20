@@ -2,7 +2,7 @@ package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
-import static drk.shopamos.rest.mother.AccountMother.assertAccountRequestEqualsAccountEntity;
+import static drk.shopamos.rest.mother.AccountMother.assertAccountDataNami;
 import static drk.shopamos.rest.mother.AccountMother.buildAccountNami;
 import static drk.shopamos.rest.mother.AccountMother.buildAccountRequestNami;
 
@@ -99,7 +99,7 @@ final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildAccountRequestNami();
         sendPostRequestExpectingStatus200(CREATE_URL, withAdminToken(), requestBody);
         verify(accountService).createAccount(accountArgumentCaptor.capture());
-        assertAccountRequestEqualsAccountEntity(requestBody, accountArgumentCaptor.getValue());
+        assertAccountDataNami(accountArgumentCaptor.getValue());
     }
 
     @Test

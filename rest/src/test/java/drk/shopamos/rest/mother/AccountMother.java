@@ -38,17 +38,7 @@ public class AccountMother {
                 .build();
     }
 
-    public static void assertAccountRequestEqualsAccountEntity(
-            AccountRequest accountRequest, Account account) {
-        assertThat(accountRequest.getName(), is(account.getName()));
-        assertThat(accountRequest.getPassword(), is(account.getPassword()));
-        assertThat(accountRequest.getEmail(), is(account.getEmail()));
-        assertThat(accountRequest.isAdmin(), is(account.isAdmin()));
-        assertThat(accountRequest.isActive(), is(account.isActive()));
-    }
-
     public static void assertAccountDataNami(Account account) {
-        assertThat(account.getId(), is(notNullValue()));
         assertThat(account.getEmail(), is(NAMI_EMAIL));
         assertThat(account.getUsername(), is(NAMI_EMAIL));
         assertThat(account.getPassword(), is(NAMI_PWD));
