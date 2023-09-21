@@ -22,7 +22,9 @@ import java.util.Map;
 @ExtendWith(MockitoExtension.class)
 class MessageProviderTest {
     private static final String MSG_CODE = "msgCode";
-    private static final String MSG_PARAM = "msgParam";
+    private static final String MSG_PARAM_STR = "msgParam";
+    private static final String MSG_PARAM_STR_2 = "msgParam2";
+    private static final Integer MSG_PARAM_INT = 123;
     private static final MockedStatic<LocaleContextHolder> localeContextHolder =
             Mockito.mockStatic(LocaleContextHolder.class);
     @Mock private Locale locale;
@@ -38,8 +40,12 @@ class MessageProviderTest {
     void getMessage_callsMessageSourceWithCorrectArguments() {
         localeContextHolder.when(LocaleContextHolder::getLocale).thenReturn(locale);
         MessageProvider testee = new MessageProvider(messageSource);
-        testee.getMessage(MSG_CODE, MSG_PARAM);
-        verify(messageSource).getMessage(MSG_CODE, new Object[] {MSG_PARAM}, locale);
+        testee.getMessage(MSG_CODE, MSG_PARAM_STR, MSG_PARAM_STR_2);
+        verify(messageSource)
+                .getMessage(MSG_CODE, new String[] {MSG_PARAM_STR, MSG_PARAM_STR_2}, locale);
+        testee.getMessage(MSG_CODE, MSG_PARAM_INT);
+        verify(messageSource)
+                .getMessage(MSG_CODE, new String[] {String.valueOf(MSG_PARAM_INT)}, locale);
         testee.getMessage(MSG_CODE);
         verify(messageSource).getMessage(MSG_CODE, null, locale);
     }

@@ -21,6 +21,8 @@ public class MessageProvider {
     public static final String MSG_CANNOT_DEACTIVATE_ACCOUNT =
             "error.business.entity.cannot.deactivate.account";
 
+    public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";
+
     private final Locale locale = LocaleContextHolder.getLocale();
     private final MessageSource messageSource;
 
@@ -28,8 +30,12 @@ public class MessageProvider {
         return messageSource.getMessage(msgCode, null, locale);
     }
 
-    public String getMessage(String msgCode, Object param) {
-        return messageSource.getMessage(msgCode, new Object[] {param}, locale);
+    public String getMessage(String msgCode, String... params) {
+        return messageSource.getMessage(msgCode, params, locale);
+    }
+
+    public String getMessage(String msgCode, Integer param) {
+        return messageSource.getMessage(msgCode, new String[] {String.valueOf(param)}, locale);
     }
 
     public String getMessageWithNamedParams(String msgCode, Map<String, String> namedParams) {

@@ -36,17 +36,16 @@ public class AccountService implements UserDetailsService {
                                         msgProvider.getMessage(MSG_NOT_FOUND_USER, username)));
     }
 
-    public void createAccount(Account account) {
+    public Account createAccount(Account account) {
         validateEmailDoesNotExist(account.getEmail());
-        accountRepository.save(account);
-        //TODO: eoncode password
+        return accountRepository.save(account);
     }
 
-    public void updateAccount(Account account) {
+    public Account updateAccount(Account account) {
         validateIdExists(account.getId());
         validatePrincipalNotDeactivatingHimself(account.getId(), account.isActive());
-        validatePrincipalNotDemotingHimself(account.getId(),account.isAdmin());
-        accountRepository.save(account);
+        validatePrincipalNotDemotingHimself(account.getId(), account.isAdmin());
+        return accountRepository.save(account);
     }
 
     private void validateEmailDoesNotExist(String email) {

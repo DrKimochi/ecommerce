@@ -1,6 +1,13 @@
 package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
+import static drk.shopamos.rest.service.ServiceTest.MSG_BODY_UNREADABLE;
+import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_EMAIL;
+import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_EMPTY;
+import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_MAX_LENGTH;
+import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_PASSWORD;
+import static drk.shopamos.rest.service.ServiceTest.MSG_FORM_FIELD;
+import static drk.shopamos.rest.service.ServiceTest.MSG_NOT_FOUND_ID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -46,15 +53,7 @@ import java.util.Optional;
             JwtTokenHelper.class
         })
 public abstract class ControllerTest {
-    //TODO: Move messages to ServiceTet
-    private static final String MSG_FORM_FIELD = "error.form.field";
-    private static final String MSG_FIELD_EMPTY = "error.form.field.empty";
-    private static final String MSG_FIELD_EMAIL = "error.form.field.email";
-    private static final String MSG_FIELD_PASSWORD = "error.form.field.password";
-    private static final String MSG_FIELD_MAX_LENGTH = "error.form.field.maxlength";
-    private static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
-    private static final String MSG_NOT_FOUND_ID = "error.business.entity.notfound.id";
-    private static final String MSG_EXISTS_EMAIL = "error.business.entity.exists.email";
+
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")

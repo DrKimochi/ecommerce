@@ -2,6 +2,8 @@ package drk.shopamos.rest.controller;
 
 import drk.shopamos.rest.controller.mapper.AccountMapper;
 import drk.shopamos.rest.controller.request.AccountRequest;
+import drk.shopamos.rest.controller.response.AccountResponse;
+import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.service.AccountService;
 
 import jakarta.validation.Valid;
@@ -23,22 +25,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController {
     private final AccountService accountService;
     private final AccountMapper accountMapper;
-    //TODO: Return an AccountResponse
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> createAccount(@Valid @RequestBody AccountRequest accountRequest) {
-        accountService.createAccount(accountMapper.map(accountRequest));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AccountResponse> createAccount(
+            @Valid @RequestBody AccountRequest accountRequest) {
+        Account account = accountService.createAccount(accountMapper.map(accountRequest));
+        return ResponseEntity.ok(accountMapper.map(account));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Void> updateAccount(
+    public ResponseEntity<AccountResponse> updateAccount(
             @PathVariable(name = "id") Integer id,
             @Valid @RequestBody AccountRequest accountRequest) {
-
-        accountService.updateAccount(accountMapper.map(accountRequest, id));
-        return ResponseEntity.ok().build();
-
+        Account account = accountService.updateAccount(accountMapper.map(accountRequest, id));
+        return ResponseEntity.ok(accountMapper.map(account));
     }
 }

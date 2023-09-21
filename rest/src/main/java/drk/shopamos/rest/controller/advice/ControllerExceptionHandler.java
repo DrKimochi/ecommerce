@@ -2,6 +2,9 @@ package drk.shopamos.rest.controller.advice;
 
 import static drk.shopamos.rest.config.MessageProvider.MSG_BODY_UNREADABLE;
 import static drk.shopamos.rest.config.MessageProvider.MSG_FORM_FIELD;
+import static drk.shopamos.rest.config.MessageProvider.MSG_PARAM_WRONG_TYPE;
+
+import static java.util.Objects.requireNonNull;
 
 import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.response.ErrorResponse;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -55,6 +59,17 @@ public class ControllerExceptionHandler {
         return ErrorResponse.builder()
                 .exceptionId(exception.getExceptionId())
                 .message(exception.getMessage())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseBody
+    ErrorResponse handleArgumentMismatchException(MethodArgumentTypeMismatchException exception) {
+        String value = exception.getName();
+        String type = requireNonNull(exception.getRequiredType()).getSimpleName().toLowerCase();
+        return ErrorResponse.builder()
+                .message(messageProvider.getMessage(MSG_PARAM_WRONG_TYPE, value, type))
                 .build();
     }
 }
