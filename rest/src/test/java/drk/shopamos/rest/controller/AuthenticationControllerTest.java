@@ -6,6 +6,9 @@ import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -32,7 +35,10 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     @DisplayName("login - when body is missing then return 400 response with message")
     void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        ErrorResponse errorResponse = sendPostRequestExpectingStatus400(LOGIN_URL, null, null);
+        ErrorResponse errorResponse =
+                getMvc().send(POST, LOGIN_URL)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
 
         assertRequestBodyUnreadableError(errorResponse);
     }
@@ -43,7 +49,11 @@ class AuthenticationControllerTest extends ControllerTest {
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
         AuthenticationRequest body = buildRequest(null, null);
 
-        ErrorResponse errorResponse = sendPostRequestExpectingStatus400(LOGIN_URL, null, body);
+        ErrorResponse errorResponse =
+                getMvc().send(POST, LOGIN_URL)
+                        .withBody(body)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
         assertInvalidFormError(errorResponse);
@@ -58,9 +68,11 @@ class AuthenticationControllerTest extends ControllerTest {
         when(authService.login(NAMI_EMAIL, NAMI_PWD)).thenReturn(SOME_TOKEN);
 
         AuthenticationRequest body = buildRequest(NAMI_EMAIL, NAMI_PWD);
-        MvcResult mvcResult = sendPostRequestExpectingStatus200(LOGIN_URL, null, body);
-
-        AuthenticationResponse response = readAuthenticationResponse(mvcResult);
+        AuthenticationResponse response =
+                getMvc().send(POST, LOGIN_URL)
+                        .withBody(body)
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AuthenticationResponse.class);
 
         assertThat(response.getJwtToken(), is(SOME_TOKEN));
     }
@@ -69,9 +81,4 @@ class AuthenticationControllerTest extends ControllerTest {
         return AuthenticationRequest.builder().username(username).password(password).build();
     }
 
-    private AuthenticationResponse readAuthenticationResponse(MvcResult mvcResult)
-            throws UnsupportedEncodingException, JsonProcessingException {
-        return objectMapper.readValue(
-                mvcResult.getResponse().getContentAsString(), AuthenticationResponse.class);
-    }
 }

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import drk.shopamos.rest.controller.request.AccountRequest;
+import drk.shopamos.rest.controller.response.AccountResponse;
 import drk.shopamos.rest.model.entity.Account;
 
 public class AccountMother {
@@ -57,7 +58,7 @@ public class AccountMother {
                 .build();
     }
 
-    public static void assertAccountDataNami(Account account) {
+    public static void assertAccountNami(Account account) {
         assertThat(account.getEmail(), is(NAMI_EMAIL));
         assertThat(account.getUsername(), is(NAMI_EMAIL));
         assertThat(account.getPassword(), is(NAMI_PWD));
@@ -66,7 +67,15 @@ public class AccountMother {
         assertThat(account.isAdmin(), is(false));
     }
 
-    public static void assertAccountDataLuffy(Account account) {
+    public static void assertAccountResponseNami(AccountResponse accountResponse) {
+        assertThat(accountResponse.getEmail(), is(NAMI_EMAIL));
+        assertThat(accountResponse.getId(), is(NAMI_ID));
+        assertThat(accountResponse.getName(), is(NAMI_NAME));
+        assertThat(accountResponse.getAdmin(), is(false));
+        assertThat(accountResponse.getActive(), is(true));
+    }
+
+    public static void assertAccountLuffy(Account account) {
         assertThat(account.getId(), notNullValue());
         assertThat(account.getEmail(), is(LUFFY_EMAIL));
         assertThat(account.getName(), is(LUFFY_NAME));

@@ -1,5 +1,7 @@
 package drk.shopamos.rest.service;
 
+import static drk.shopamos.rest.config.MessageProvider.MSG_CANNOT_DEACTIVATE_ACCOUNT;
+import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_USER;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
@@ -59,7 +61,7 @@ class AccountServiceTest extends ServiceTest {
         Account luffy = buildAdminLuffy();
         when(accountRepository.existsByEmail(LUFFY_EMAIL)).thenReturn(true);
         assertThrows(EntityExistsException.class, () -> testee.createAccount(luffy));
-        verify(messageProvider).getMessage(MSG_EMAIL_EXISTS, LUFFY_EMAIL);
+        verify(messageProvider).getMessage(MSG_EXISTS_EMAIL, LUFFY_EMAIL);
         verify(accountRepository, times(0)).save(any());
     }
 

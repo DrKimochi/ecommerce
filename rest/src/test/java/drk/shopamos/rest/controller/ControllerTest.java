@@ -13,12 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static java.util.Objects.nonNull;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import drk.shopamos.rest.config.JwtAuthenticationFilter;
@@ -33,13 +28,9 @@ import drk.shopamos.rest.service.AccountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -106,45 +97,8 @@ public abstract class ControllerTest {
                 is(messageProvider.getMessage(MSG_NOT_FOUND_ID, entityName)));
     }
 
-    protected ErrorResponse sendPostRequestExpectingStatus400(
-            String url, String jwtToken, Object body) throws Exception {
-        return readErrorResponse(
-                mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
-                        .andExpect(status().isBadRequest())
-                        .andReturn());
-    }
-
-    protected MvcResult sendPostRequestExpectingStatus200(String url, String jwtToken, Object body)
-            throws Exception {
-        return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
-                .andExpect(status().isOk())
-                .andReturn();
-    }
-
-    protected MvcResult sendPostRequestExpectingStatus403(String url, String jwtToken, Object body)
-            throws Exception {
-        return mockMvc.perform(getPostRequestBuilder(url, jwtToken, body))
-                .andExpect(status().isForbidden())
-                .andReturn();
-    }
-
-    private ErrorResponse readErrorResponse(MvcResult mvcResult)
-            throws UnsupportedEncodingException, JsonProcessingException {
-        return objectMapper.readValue(
-                mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
-    }
-
-    private MockHttpServletRequestBuilder getPostRequestBuilder(
-            String url, String jwtToken, Object body) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder =
-                post(url).contentType(MediaType.APPLICATION_JSON);
-        if (nonNull(jwtToken)) {
-            requestBuilder = requestBuilder.header("authorization", "Bearer " + jwtToken);
-        }
-        if (nonNull(body)) {
-            requestBuilder = requestBuilder.content(objectMapper.writeValueAsString(body));
-        }
-        return requestBuilder;
+    public MockMvcHandler getMvc() {
+        return new MockMvcHandler(mockMvc, objectMapper);
     }
 
     private void assertFormFieldError(
@@ -167,11 +121,11 @@ public abstract class ControllerTest {
                 .findFirst();
     }
 
-    protected String withAdminToken() {
+    protected String adminToken() {
         return getJwtToken(true);
     }
 
-    protected String withCustomerToken() {
+    protected String customerToken() {
         return getJwtToken(false);
     }
 

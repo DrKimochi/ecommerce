@@ -3,15 +3,22 @@ package drk.shopamos.rest.controller;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
-import static drk.shopamos.rest.mother.AccountMother.assertAccountDataNami;
+import static drk.shopamos.rest.mother.AccountMother.assertAccountResponseNami;
+import static drk.shopamos.rest.mother.AccountMother.buildCustomerNami;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerRequestNami;
+import static drk.shopamos.rest.mother.AccountMother.buildNewCustomerNami;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.OK;
 
 import drk.shopamos.rest.argument.BadEmailArgumentProvider;
 import drk.shopamos.rest.argument.BadPasswordArgumentProvider;
 import drk.shopamos.rest.controller.mapper.AccountMapperImpl;
 import drk.shopamos.rest.controller.request.AccountRequest;
+import drk.shopamos.rest.controller.response.AccountResponse;
 import drk.shopamos.rest.controller.response.ErrorResponse;
 import drk.shopamos.rest.model.entity.Account;
 
@@ -28,14 +35,17 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(classes = {AccountController.class, AccountMapperImpl.class})
 final class AccountControllerTest extends ControllerTest {
 
-    public static final String CREATE_URL = "/v1/accounts";
+    public static final String CREATE_URI = "/v1/accounts";
     @Captor private ArgumentCaptor<Account> accountArgumentCaptor;
 
     @Test
     @DisplayName("createAccount - when body is missing then return 400 response with message")
     void createAccount_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), null);
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
         assertRequestBodyUnreadableError(errorResponse);
     }
 
@@ -45,7 +55,11 @@ final class AccountControllerTest extends ControllerTest {
     void createAccount_whenNameEmailPwdMissing_thenReturn400ErrorResponse() throws Exception {
         AccountRequest requestBody = AccountRequest.builder().build();
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
         assertEmptyFieldError(errorResponse, "name");
         assertEmptyFieldError(errorResponse, "email");
         assertEmptyFieldError(errorResponse, "password");
@@ -58,7 +72,11 @@ final class AccountControllerTest extends ControllerTest {
             throws Exception {
         AccountRequest requestBody = AccountRequest.builder().name(NAMI_NAME).email(email).build();
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
         assertEmailFieldError(errorResponse);
     }
 
@@ -68,7 +86,11 @@ final class AccountControllerTest extends ControllerTest {
         String longName = new String(new char[101]);
         AccountRequest requestBody = AccountRequest.builder().name(longName).build();
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
         assertMaxLengthFieldError(errorResponse, "name", "100");
     }
 
@@ -86,7 +108,11 @@ final class AccountControllerTest extends ControllerTest {
                         .build();
 
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
         assertPasswordFieldError(errorResponse);
     }
 
@@ -100,10 +126,14 @@ final class AccountControllerTest extends ControllerTest {
                         .email(NAMI_EMAIL)
                         .password(NAMI_PWD)
                         .build();
-        System.err.println(requestBody);
-        sendPostRequestExpectingStatus200(CREATE_URL, withAdminToken(), requestBody);
-        verify(accountService).createAccount(accountArgumentCaptor.capture());
-        assertAccountDataNami(accountArgumentCaptor.getValue());
+        when(accountService.createAccount(buildNewCustomerNami())).thenReturn(buildCustomerNami());
+        AccountResponse accountResponse =
+                getMvc().send(POST, CREATE_URI)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse.class);
+        assertAccountResponseNami(accountResponse);
     }
 
     @Test
@@ -111,14 +141,17 @@ final class AccountControllerTest extends ControllerTest {
             "createAccount - when required data provided but user role is CUSTOMER then return 403 response")
     void createAccount_whenUserRoleIsCustomer_thenReturn403Response() throws Exception {
         AccountRequest requestBody = buildCustomerRequestNami();
-        sendPostRequestExpectingStatus403(CREATE_URL, withCustomerToken(), requestBody);
+        getMvc().send(POST, CREATE_URI)
+                .withJwt(customerToken())
+                .withBody(requestBody)
+                .thenExpectStatus(FORBIDDEN);
     }
 
     @Test
     @DisplayName("createAccount - when not authenticated then return 403 response")
     void createAccount_whenNotAuthenticated_thenReturn403Response() throws Exception {
         AccountRequest requestBody = buildCustomerRequestNami();
-        sendPostRequestExpectingStatus403(CREATE_URL, null, requestBody);
+        getMvc().send(POST, CREATE_URI).withBody(requestBody).thenExpectStatus(FORBIDDEN);
     }
 
     /*    @Test

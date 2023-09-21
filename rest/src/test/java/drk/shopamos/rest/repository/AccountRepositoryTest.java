@@ -4,8 +4,8 @@ import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.ZORO_EMAIL;
-import static drk.shopamos.rest.mother.AccountMother.assertAccountDataLuffy;
-import static drk.shopamos.rest.mother.AccountMother.assertAccountDataNami;
+import static drk.shopamos.rest.mother.AccountMother.assertAccountLuffy;
+import static drk.shopamos.rest.mother.AccountMother.assertAccountNami;
 import static drk.shopamos.rest.mother.AccountMother.buildNewCustomerNami;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,7 +32,7 @@ class AccountRepositoryTest {
     void findByEmail_whenAccountExists_thenFindsAccount() {
         Optional<Account> accountOpt = testee.findByEmail(LUFFY_EMAIL);
         assertThat(accountOpt.isPresent(), is(true));
-        assertAccountDataLuffy(accountOpt.get());
+        assertAccountLuffy(accountOpt.get());
     }
 
     @Test
@@ -72,7 +72,7 @@ class AccountRepositoryTest {
         testee.save(buildNewCustomerNami());
         Optional<Account> expectedSavedAccountOpt = testee.findByEmail(NAMI_EMAIL);
         assertThat(expectedSavedAccountOpt.isPresent(), is(true));
-        assertAccountDataNami(expectedSavedAccountOpt.get());
+        assertAccountNami(expectedSavedAccountOpt.get());
     }
 
     @Test
