@@ -3,9 +3,11 @@ package drk.shopamos.rest.service;
 import static drk.shopamos.rest.config.MessageProvider.MSG_CANNOT_DEACTIVATE_ACCOUNT;
 import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_USER;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_ENCODED_PWD;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
+import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffyWithEncodedPwd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -36,6 +39,7 @@ import java.util.Optional;
 class AccountServiceTest extends ServiceTest {
     @Mock AccountRepository accountRepository;
     @Mock MessageProvider messageProvider;
+    @Mock PasswordEncoder passwordEncoder;
     @InjectMocks AccountService testee;
 
     @Test
@@ -109,11 +113,12 @@ class AccountServiceTest extends ServiceTest {
     }
 
     @Test
-    @DisplayName("updateAccount - save account when validations pass")
+    @DisplayName("updateAccount - save account with encoded password when validations pass")
     void updateAccount_savesWhenValidationsPass() {
         Account luffy = buildAdminLuffy();
         when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
+        when(passwordEncoder.encode(luffy.getPassword())).thenReturn(LUFFY_ENCODED_PWD);
         testee.updateAccount(luffy);
-        verify(accountRepository).save(luffy);
+        verify(accountRepository).save(buildAdminLuffyWithEncodedPwd());
     }
 }

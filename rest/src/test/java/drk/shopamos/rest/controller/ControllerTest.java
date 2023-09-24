@@ -8,6 +8,7 @@ import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_MAX_LENGTH;
 import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_PASSWORD;
 import static drk.shopamos.rest.service.ServiceTest.MSG_FORM_FIELD;
 import static drk.shopamos.rest.service.ServiceTest.MSG_NOT_FOUND_ID;
+import static drk.shopamos.rest.service.ServiceTest.MSG_PARAM_WRONG_TYPE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -95,6 +96,13 @@ public abstract class ControllerTest {
         assertThat(
                 errorResponse.getMessage(),
                 is(messageProvider.getMessage(MSG_NOT_FOUND_ID, entityName)));
+    }
+
+    protected void assertArgumentMismatchError(
+            ErrorResponse errorResponse, String value, String type) {
+        assertThat(
+                errorResponse.getMessage(),
+                is(messageProvider.getMessage(MSG_PARAM_WRONG_TYPE, value, type)));
     }
 
     public MockMvcHandler getMvc() {

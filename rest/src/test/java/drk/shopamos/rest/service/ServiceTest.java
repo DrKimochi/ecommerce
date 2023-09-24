@@ -19,15 +19,14 @@ public abstract class ServiceTest {
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     public static final String MSG_NOT_FOUND_ID = "error.business.entity.notfound.id";
     public static final String MSG_EXISTS_EMAIL = "error.business.entity.exists.email";
-    @Mock
-    Authentication authentication;
-    @Mock
-    SecurityContext securityContext;
+    public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";
+
+    @Mock Authentication authentication;
+    @Mock SecurityContext securityContext;
 
     protected void mockPrincipalAccount(Account account) {
         when(authentication.getPrincipal()).thenReturn(account);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
     }
-
 }

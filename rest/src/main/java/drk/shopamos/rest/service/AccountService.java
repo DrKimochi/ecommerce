@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +27,7 @@ public class AccountService implements UserDetailsService {
 
     private final AccountRepository accountRepository;
     private final MessageProvider msgProvider;
+    private final PasswordEncoder passwordEncoder;
 
     public Account loadUserByUsername(String username) {
         return accountRepository
@@ -38,6 +40,7 @@ public class AccountService implements UserDetailsService {
 
     public Account createAccount(Account account) {
         validateEmailDoesNotExist(account.getEmail());
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
         return accountRepository.save(account);
     }
 
@@ -45,6 +48,7 @@ public class AccountService implements UserDetailsService {
         validateIdExists(account.getId());
         validatePrincipalNotDeactivatingHimself(account.getId(), account.isActive());
         validatePrincipalNotDemotingHimself(account.getId(), account.isAdmin());
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
         return accountRepository.save(account);
     }
 

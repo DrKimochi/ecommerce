@@ -1,21 +1,25 @@
 package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_ID;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
-import static drk.shopamos.rest.mother.AccountMother.assertAccountResponseNami;
-import static drk.shopamos.rest.mother.AccountMother.buildCustomerNami;
+import static drk.shopamos.rest.mother.AccountMother.buildCustomerNamiWithId;
+import static drk.shopamos.rest.mother.AccountMother.buildCustomerNamiWithoutId;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerRequestNami;
-import static drk.shopamos.rest.mother.AccountMother.buildNewCustomerNami;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 
-import drk.shopamos.rest.argument.BadEmailArgumentProvider;
-import drk.shopamos.rest.argument.BadPasswordArgumentProvider;
+import drk.shopamos.rest.argument.AccountCreateUpdateUriArguments;
+import drk.shopamos.rest.argument.BadEmailArguments;
+import drk.shopamos.rest.argument.BadPasswordArguments;
 import drk.shopamos.rest.controller.mapper.AccountMapperImpl;
 import drk.shopamos.rest.controller.request.AccountRequest;
 import drk.shopamos.rest.controller.response.AccountResponse;
@@ -26,36 +30,43 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 
 @WebMvcTest
 @ContextConfiguration(classes = {AccountController.class, AccountMapperImpl.class})
-final class AccountControllerTest extends ControllerTest {
+public final class AccountControllerTest extends ControllerTest {
 
     public static final String CREATE_URI = "/v1/accounts";
-    @Captor private ArgumentCaptor<Account> accountArgumentCaptor;
+    public static final String UPDATE_URI = "/v1/accounts/{id}";
+    @Autowired PasswordEncoder passwordEncoder;
 
-    @Test
-    @DisplayName("createAccount - when body is missing then return 400 response with message")
-    void createAccount_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
+    @ParameterizedTest
+    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
+    @DisplayName("createUpdateAccount - when body is missing then return 400 with message")
+    void createUpdateAccount_whenBodyMissing_thenReturn400(
+            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         ErrorResponse errorResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(httpMethod, uri, uriVariable)
                         .withJwt(adminToken())
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
         assertRequestBodyUnreadableError(errorResponse);
     }
 
-    @Test
+    @ParameterizedTest
+    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
     @DisplayName(
-            "createAccount - when name, email or password are missing then return 400 response with message")
-    void createAccount_whenNameEmailPwdMissing_thenReturn400ErrorResponse() throws Exception {
+            "createUpdateAccount - when name, email or password are missing then return 400 with message")
+    void createUpdateAccount_whenNameEmailPwdMissing_thenReturn400(
+            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         AccountRequest requestBody = AccountRequest.builder().build();
         ErrorResponse errorResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(httpMethod, uri, uriVariable)
                         .withJwt(adminToken())
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
@@ -66,13 +77,13 @@ final class AccountControllerTest extends ControllerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BadEmailArgumentProvider.class)
-    @DisplayName("createAccount - when email has bad format then return 400 response with message")
-    void createAccount_whenEmailBadFormat_thenReturn400ErrorResponse(String email)
-            throws Exception {
+    @ArgumentsSource(BadEmailArguments.class)
+    @DisplayName("createUpdateAccount - when email has bad format then return 400 with message")
+    void createUpdateAccount_whenEmailBadFormat_thenReturn400(
+            HttpMethod httpMethod, String uri, String uriVariable, String email) throws Exception {
         AccountRequest requestBody = AccountRequest.builder().name(NAMI_NAME).email(email).build();
         ErrorResponse errorResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(httpMethod, uri, uriVariable)
                         .withJwt(adminToken())
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
@@ -80,13 +91,15 @@ final class AccountControllerTest extends ControllerTest {
         assertEmailFieldError(errorResponse);
     }
 
-    @Test
-    @DisplayName("createAccount - when name too long then return 400 response with message")
-    void createAccount_whenNameTooLong_thenReturn400ErrorResponse() throws Exception {
+    @ParameterizedTest
+    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
+    @DisplayName("createUpdateAccount - when name too long then return 400 with message")
+    void createUpdateAccount_whenNameTooLong_thenReturn400(
+            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         String longName = new String(new char[101]);
         AccountRequest requestBody = AccountRequest.builder().name(longName).build();
         ErrorResponse errorResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(httpMethod, uri, uriVariable)
                         .withJwt(adminToken())
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
@@ -95,10 +108,10 @@ final class AccountControllerTest extends ControllerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(BadPasswordArgumentProvider.class)
-    @DisplayName(
-            "createAccount - when password has bad format then return 400 response with message")
-    void createAccount_whenPasswordBadFormat_thenReturn400ErrorResponse(String password)
+    @ArgumentsSource(BadPasswordArguments.class)
+    @DisplayName("createUpdateAccount - when password has bad format then return 400 with message")
+    void createUpdateAccount_whenPasswordBadFormat_thenReturn400(
+            HttpMethod httpMethod, String uri, String uriVariable, String password)
             throws Exception {
         AccountRequest requestBody =
                 AccountRequest.builder()
@@ -108,7 +121,7 @@ final class AccountControllerTest extends ControllerTest {
                         .build();
 
         ErrorResponse errorResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(httpMethod, uri, uriVariable)
                         .withJwt(adminToken())
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
@@ -118,15 +131,16 @@ final class AccountControllerTest extends ControllerTest {
 
     @Test
     @DisplayName(
-            "createAccount - when required data provided and user role is ADMIN then call service layer and return 200 response")
-    void createAccount_whenRequiredDataProvided_thenReturn200Response() throws Exception {
+            "createAccount - when required data provided and user role is ADMIN then call service layer and return 200")
+    void createAccount_whenRequiredDataProvided_thenReturn200() throws Exception {
+        when(accountService.createAccount(buildCustomerNamiWithoutId()))
+                .thenReturn(buildCustomerNamiWithId());
         AccountRequest requestBody =
                 AccountRequest.builder()
                         .name(NAMI_NAME)
                         .email(NAMI_EMAIL)
                         .password(NAMI_PWD)
                         .build();
-        when(accountService.createAccount(buildNewCustomerNami())).thenReturn(buildCustomerNami());
         AccountResponse accountResponse =
                 getMvc().send(POST, CREATE_URI)
                         .withJwt(adminToken())
@@ -136,41 +150,70 @@ final class AccountControllerTest extends ControllerTest {
         assertAccountResponseNami(accountResponse);
     }
 
-    @Test
+    @ParameterizedTest
+    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
     @DisplayName(
-            "createAccount - when required data provided but user role is CUSTOMER then return 403 response")
-    void createAccount_whenUserRoleIsCustomer_thenReturn403Response() throws Exception {
+            "createUpdateAccount - when required data provided but user role is CUSTOMER then return 403")
+    void createUpdateAccount_whenUserRoleIsCustomer_thenReturn403(
+            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(POST, CREATE_URI)
+        getMvc().send(httpMethod, uri, uriVariable)
                 .withJwt(customerToken())
                 .withBody(requestBody)
                 .thenExpectStatus(FORBIDDEN);
     }
 
-    @Test
-    @DisplayName("createAccount - when not authenticated then return 403 response")
-    void createAccount_whenNotAuthenticated_thenReturn403Response() throws Exception {
+    @ParameterizedTest
+    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
+    @DisplayName("createUpdateAccount - when not authenticated then return 403 response")
+    void createUpdateAccount_whenNotAuthenticated_thenReturn403(
+            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(POST, CREATE_URI).withBody(requestBody).thenExpectStatus(FORBIDDEN);
+        getMvc().send(httpMethod, uri, uriVariable)
+                .withBody(requestBody)
+                .thenExpectStatus(FORBIDDEN);
     }
 
-    /*    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {"2147483648", "12A"})
     @DisplayName(
-            "createAccount - when service Throws EntityNotFoundException then return 400 Response with message")
-    void createAccount_whenServiceThrowsEntityNotFoundException_thenReturn400WithMessage()
-            throws Exception {
-        Account account = buildAccountNami();
-        AccountRequest requestBody = buildAccountRequestNami();
-
-        doThrow(new EntityNotFoundException(messageProvider.getMessage(), account.getEmail()))
-                .when(accountService)
-                .createAccount(account);
-
+            "updateAccount - when id cannot be converted to integer then return 400 with message")
+    void updateAccount_whenInvalidIdType_thenReturn400(String id) throws Exception {
         ErrorResponse errorResponse =
-                sendPostRequestExpectingStatus400(CREATE_URL, withAdminToken(), requestBody);
+                getMvc().send(PUT, UPDATE_URI, id)
+                        .withJwt(adminToken())
+                        .withBody(new AccountRequest())
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
+        assertArgumentMismatchError(errorResponse, "id", "integer");
+    }
 
-        assertEntityNotFoundError(errorResponse, account.getEmail());
-    }*/
+    @Test
+    @DisplayName(
+            "updateAccount - when required data provided then call service layer and return 200 with updated account info")
+    void updateAccount_whenRequiredDataProvided_thenReturn200() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.updateAccount(nami)).thenReturn(nami);
+        AccountRequest requestBody =
+                AccountRequest.builder()
+                        .name(NAMI_NAME)
+                        .email(NAMI_EMAIL)
+                        .password(NAMI_PWD)
+                        .build();
+        AccountResponse accountResponse =
+                getMvc().send(PUT, UPDATE_URI, NAMI_ID)
+                        .withJwt(adminToken())
+                        .withBody(requestBody)
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse.class);
+        assertAccountResponseNami(accountResponse);
+    }
 
-    // TODO: controller tests for updateAccount
+    private void assertAccountResponseNami(AccountResponse accountResponse) {
+        assertThat(accountResponse.getEmail(), is(NAMI_EMAIL));
+        assertThat(accountResponse.getId(), is(NAMI_ID));
+        assertThat(accountResponse.getName(), is(NAMI_NAME));
+        assertThat(accountResponse.getAdmin(), is(false));
+        assertThat(accountResponse.getActive(), is(true));
+    }
 }

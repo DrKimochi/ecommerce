@@ -25,16 +25,18 @@ public class MockMvcHandler {
         this.objectMapper = objectMapper;
     }
 
-    public MockMvcRequestBuilderHandler send(HttpMethod httpMethod, String uri) {
-        return new MockMvcRequestBuilderHandler(httpMethod, uri);
+    public MockMvcRequestBuilderHandler send(
+            HttpMethod httpMethod, String uri, Object... uriVariables) {
+        return new MockMvcRequestBuilderHandler(httpMethod, uri, uriVariables);
     }
 
     public class MockMvcRequestBuilderHandler {
         private MockHttpServletRequestBuilder mockHttpServletRequestBuilder;
 
-        private MockMvcRequestBuilderHandler(HttpMethod httpMethod, String uri) {
+        private MockMvcRequestBuilderHandler(
+                HttpMethod httpMethod, String uri, Object... uriVariables) {
             this.mockHttpServletRequestBuilder =
-                    request(httpMethod, uri).contentType(MediaType.APPLICATION_JSON);
+                    request(httpMethod, uri, uriVariables).contentType(MediaType.APPLICATION_JSON);
         }
 
         public MockMvcRequestBuilderHandler withJwt(String token) {

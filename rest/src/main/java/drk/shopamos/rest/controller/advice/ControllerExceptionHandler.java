@@ -13,6 +13,7 @@ import drk.shopamos.rest.service.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -52,14 +53,15 @@ public class ControllerExceptionHandler {
                 .build();
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BusinessException.class)
     @ResponseBody
-    ErrorResponse handleBusinessException(BusinessException exception) {
-        return ErrorResponse.builder()
-                .exceptionId(exception.getExceptionId())
-                .message(exception.getMessage())
-                .build();
+    ResponseEntity<ErrorResponse> handleBusinessException(BusinessException exception) {
+        return ResponseEntity.status(exception.getHttpStatus())
+                .body(
+                        ErrorResponse.builder()
+                                .exceptionId(exception.getExceptionId())
+                                .message(exception.getMessage())
+                                .build());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
