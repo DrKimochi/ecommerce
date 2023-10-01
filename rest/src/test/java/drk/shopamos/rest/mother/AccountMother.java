@@ -58,8 +58,15 @@ public class AccountMother {
                 .name(NAMI_NAME)
                 .email(NAMI_EMAIL)
                 .password(NAMI_PWD)
-                .active(true)
-                .admin(false)
+                .build();
+    }
+
+    public static AccountRequest buildAdminRequestLuffy() {
+        return AccountRequest.builder()
+                .name(LUFFY_NAME)
+                .email(LUFFY_EMAIL)
+                .password(LUFFY_PWD)
+                .admin(true)
                 .build();
     }
 }

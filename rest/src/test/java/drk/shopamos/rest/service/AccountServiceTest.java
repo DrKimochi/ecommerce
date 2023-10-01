@@ -1,6 +1,5 @@
 package drk.shopamos.rest.service;
 
-import static drk.shopamos.rest.config.MessageProvider.MSG_CANNOT_DEACTIVATE_ACCOUNT;
 import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_USER;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ENCODED_PWD;
@@ -8,6 +7,8 @@ import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffyWithEncodedPwd;
+import static drk.shopamos.rest.mother.MessageMother.MSG_EXISTS_EMAIL;
+import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -22,7 +23,6 @@ import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.repository.AccountRepository;
 import drk.shopamos.rest.service.exception.EntityExistsException;
 import drk.shopamos.rest.service.exception.EntityNotFoundException;
-import drk.shopamos.rest.service.exception.IllegalDataException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,30 +85,6 @@ class AccountServiceTest extends ServiceTest {
         when(accountRepository.existsById(LUFFY_ID)).thenReturn(false);
         assertThrows(EntityNotFoundException.class, () -> testee.updateAccount(luffy));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
-        verify(accountRepository, times(0)).save(any());
-    }
-
-    @Test
-    @DisplayName("updateAccount -throws exception when user is deactivating himself")
-    void updateAccount_throwsExceptionWhenUserDeactivatingHimself() {
-        Account luffy = buildAdminLuffy();
-        luffy.setActive(false);
-        mockPrincipalAccount(luffy);
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
-        assertThrows(IllegalDataException.class, () -> testee.updateAccount(luffy));
-        verify(messageProvider).getMessage(MSG_CANNOT_DEACTIVATE_ACCOUNT);
-        verify(accountRepository, times(0)).save(any());
-    }
-
-    @Test
-    @DisplayName("updateAccount -throws exception when user is demoting himself")
-    void updateAccount_throwsExceptionWhenUserDemotingHimself() {
-        Account luffy = buildAdminLuffy();
-        luffy.setAdmin(false);
-        mockPrincipalAccount(luffy);
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
-        assertThrows(IllegalDataException.class, () -> testee.updateAccount(luffy));
-        verify(messageProvider).getMessage(MessageProvider.MSG_CANNOT_DEMOTE);
         verify(accountRepository, times(0)).save(any());
     }
 

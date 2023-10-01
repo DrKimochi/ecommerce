@@ -1,9 +1,10 @@
 package drk.shopamos.rest.controller;
 
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_ID;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
-import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
+import static drk.shopamos.rest.mother.AccountMother.buildAdminRequestLuffy;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerNamiWithId;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerNamiWithoutId;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerRequestNami;
@@ -52,7 +53,7 @@ public final class AccountControllerTest extends ControllerTest {
             HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
         assertRequestBodyUnreadableError(errorResponse);
@@ -67,7 +68,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -84,7 +85,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().name(NAMI_NAME).email(email).build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -100,7 +101,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().name(longName).build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -122,7 +123,7 @@ public final class AccountControllerTest extends ControllerTest {
 
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -135,43 +136,31 @@ public final class AccountControllerTest extends ControllerTest {
     void createAccount_whenRequiredDataProvided_thenReturn200() throws Exception {
         when(accountService.createAccount(buildCustomerNamiWithoutId()))
                 .thenReturn(buildCustomerNamiWithId());
-        AccountRequest requestBody =
-                AccountRequest.builder()
-                        .name(NAMI_NAME)
-                        .email(NAMI_EMAIL)
-                        .password(NAMI_PWD)
-                        .build();
+        AccountRequest requestBody = buildCustomerRequestNami();
+        getMvc().send(POST, CREATE_URI)
+                .withJwt(adminToken(NAMI_ID))
+                .withBody(requestBody)
+                .thenExpectStatus(OK);
+    }
+
+    @Test
+    @DisplayName(
+            "createAccount -when 200 response is returned then body containing new account info is also returned")
+    void createAccount_when200Response_thenBodyContainsNewAccountInfo() throws Exception {
+        when(accountService.createAccount(buildCustomerNamiWithoutId()))
+                .thenReturn(buildCustomerNamiWithId());
+        AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
                 getMvc().send(POST, CREATE_URI)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(NAMI_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
-        assertAccountResponseNami(accountResponse);
-    }
 
-    @ParameterizedTest
-    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
-    @DisplayName(
-            "createUpdateAccount - when required data provided but user role is CUSTOMER then return 403")
-    void createUpdateAccount_whenUserRoleIsCustomer_thenReturn403(
-            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
-        AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(httpMethod, uri, uriVariable)
-                .withJwt(customerToken())
-                .withBody(requestBody)
-                .thenExpectStatus(FORBIDDEN);
-    }
-
-    @ParameterizedTest
-    @ArgumentsSource(AccountCreateUpdateUriArguments.class)
-    @DisplayName("createUpdateAccount - when not authenticated then return 403 response")
-    void createUpdateAccount_whenNotAuthenticated_thenReturn403(
-            HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
-        AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(httpMethod, uri, uriVariable)
-                .withBody(requestBody)
-                .thenExpectStatus(FORBIDDEN);
+        assertThat(accountResponse.getId(), is(NAMI_ID));
+        assertThat(accountResponse.getActive(), is(true));
+        assertThat(accountResponse.getAdmin(), is(false));
+        assertThat(accountResponse.getName(), is(NAMI_NAME));
     }
 
     @ParameterizedTest
@@ -181,7 +170,7 @@ public final class AccountControllerTest extends ControllerTest {
     void updateAccount_whenInvalidIdType_thenReturn400(String id) throws Exception {
         ErrorResponse errorResponse =
                 getMvc().send(PUT, UPDATE_URI, id)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(new AccountRequest())
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -190,30 +179,112 @@ public final class AccountControllerTest extends ControllerTest {
 
     @Test
     @DisplayName(
-            "updateAccount - when required data provided then call service layer and return 200 with updated account info")
-    void updateAccount_whenRequiredDataProvided_thenReturn200() throws Exception {
+            "updateAccount - when admin is trying to demote himself then return 403 with message")
+    void updateAccount_whenAdminSelfDemote_thenReturn403() throws Exception {
+        AccountRequest requestBody = buildAdminRequestLuffy();
+        requestBody.setAdmin(false);
+        ErrorResponse errorResponse =
+                getMvc().send(PUT, UPDATE_URI, LUFFY_ID)
+                        .withJwt(adminToken(LUFFY_ID))
+                        .withBody(requestBody)
+                        .thenExpectStatus(FORBIDDEN)
+                        .getResponseBody(ErrorResponse.class);
+
+        assertAdminSelfDemoteError(errorResponse);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when admin is trying to deactivate himself then return 403 with message")
+    void updateAccount_whenAdminSelfDeactivate_thenReturn403() throws Exception {
+        AccountRequest requestBody = buildAdminRequestLuffy();
+        requestBody.setActive(false);
+        ErrorResponse errorResponse =
+                getMvc().send(PUT, UPDATE_URI, LUFFY_ID)
+                        .withJwt(adminToken(LUFFY_ID))
+                        .withBody(requestBody)
+                        .thenExpectStatus(FORBIDDEN)
+                        .getResponseBody(ErrorResponse.class);
+
+        assertAdminSelfDeactivateError(errorResponse);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when customer is trying to promote himself to admin then return 403 with message")
+    void updateAccount_whenCustomerSelfPromote_thenReturn403() throws Exception {
+        AccountRequest requestBody = buildCustomerRequestNami();
+        requestBody.setAdmin(true);
+        ErrorResponse errorResponse =
+                getMvc().send(PUT, UPDATE_URI, NAMI_ID)
+                        .withJwt(customerToken(NAMI_ID))
+                        .withBody(requestBody)
+                        .thenExpectStatus(FORBIDDEN)
+                        .getResponseBody(ErrorResponse.class);
+
+        assertCustomerSelfPromoteError(errorResponse);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when customer is trying to update some other account then return 403 with message")
+    void updateAccount_whenCustomerTargetOtherAccount_thenReturn403() throws Exception {
+        AccountRequest requestBody = buildCustomerRequestNami();
+        ErrorResponse errorResponse =
+                getMvc().send(PUT, UPDATE_URI, LUFFY_ID)
+                        .withJwt(customerToken(NAMI_ID))
+                        .withBody(requestBody)
+                        .thenExpectStatus(FORBIDDEN)
+                        .getResponseBody(ErrorResponse.class);
+
+        assertCustomerTargetingOthersError(errorResponse);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when customer updates himself with valid data then call service layer and return 200")
+    void updateAccount_whenCustomerUpdatesHimself_thenReturn200() throws Exception {
         Account nami = buildCustomerNamiWithId();
         when(accountService.updateAccount(nami)).thenReturn(nami);
-        AccountRequest requestBody =
-                AccountRequest.builder()
-                        .name(NAMI_NAME)
-                        .email(NAMI_EMAIL)
-                        .password(NAMI_PWD)
-                        .build();
+        AccountRequest requestBody = buildCustomerRequestNami();
+        getMvc().send(PUT, UPDATE_URI, NAMI_ID)
+                .withJwt(customerToken(NAMI_ID))
+                .withBody(requestBody)
+                .thenExpectStatus(OK);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when admin updates other accounts with valid data then call service layer and return 200")
+    void updateAccount_whenAdminUpdatesOthers_thenReturn200() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.updateAccount(nami)).thenReturn(nami);
+        AccountRequest requestBody = buildCustomerRequestNami();
+        requestBody.setAdmin(true);
+        requestBody.setActive(false);
+        getMvc().send(PUT, UPDATE_URI, NAMI_ID)
+                .withJwt(adminToken(LUFFY_ID))
+                .withBody(requestBody)
+                .thenExpectStatus(OK);
+    }
+
+    @Test
+    @DisplayName(
+            "updateAccount - when 200 response is returned, then body containing updated account info is also returned")
+    void updateAccount_when200Response_thenReturnBodyWithUpdatedAccountInfo() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.updateAccount(nami)).thenReturn(nami);
+        AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
                 getMvc().send(PUT, UPDATE_URI, NAMI_ID)
-                        .withJwt(adminToken())
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
-        assertAccountResponseNami(accountResponse);
-    }
 
-    private void assertAccountResponseNami(AccountResponse accountResponse) {
-        assertThat(accountResponse.getEmail(), is(NAMI_EMAIL));
-        assertThat(accountResponse.getId(), is(NAMI_ID));
         assertThat(accountResponse.getName(), is(NAMI_NAME));
-        assertThat(accountResponse.getAdmin(), is(false));
+        assertThat(accountResponse.getId(), is(NAMI_ID));
         assertThat(accountResponse.getActive(), is(true));
+        assertThat(accountResponse.getAdmin(), is(false));
     }
 }

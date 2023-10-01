@@ -7,6 +7,7 @@ import static drk.shopamos.rest.config.MessageProvider.MSG_PARAM_WRONG_TYPE;
 import static java.util.Objects.requireNonNull;
 
 import drk.shopamos.rest.config.MessageProvider;
+import drk.shopamos.rest.controller.exception.IllegalDataException;
 import drk.shopamos.rest.controller.response.ErrorResponse;
 import drk.shopamos.rest.service.exception.BusinessException;
 
@@ -62,6 +63,15 @@ public class ControllerExceptionHandler {
                                 .exceptionId(exception.getExceptionId())
                                 .message(exception.getMessage())
                                 .build());
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(IllegalDataException.class)
+    @ResponseBody
+    ErrorResponse handleIllegalDataException(IllegalDataException exception) {
+        return ErrorResponse.builder()
+                .message(messageProvider.getMessage(exception.getMessageCode()))
+                .build();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

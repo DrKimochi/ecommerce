@@ -3,6 +3,11 @@ package drk.shopamos.rest.controller;
 import drk.shopamos.rest.controller.mapper.AccountMapper;
 import drk.shopamos.rest.controller.request.AccountRequest;
 import drk.shopamos.rest.controller.response.AccountResponse;
+import drk.shopamos.rest.controller.violation.AdminSelfDeactivateViolation;
+import drk.shopamos.rest.controller.violation.AdminSelfDemoteViolation;
+import drk.shopamos.rest.controller.violation.CustomerSelfPromoteViolation;
+import drk.shopamos.rest.controller.violation.CustomerTargetingAnotherViolation;
+import drk.shopamos.rest.controller.violation.PrincipalDataViolationChain;
 import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.service.AccountService;
 
@@ -23,11 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/accounts")
 public class AccountController {
-    //TODO: unauthenticated users can create ""customer"" accounts
-    //TODO: customers can update themselves but not make themselves admin
-    //TODO: customers can delete themselves
-    //TODO: GET /accounts/{Id}. Customers can get themselves
-    //TODO: GET /accounts?queryPrams. Only available for admins
+    // TODO: unauthenticated users can create ""customer"" accounts
+    // TODO: customers can update themselves but not make themselves admin
+    // TODO: customers can delete themselves
+    // TODO: GET /accounts/{Id}. Customers can get themselves
+    // TODO: GET /accounts?queryPrams. Only available for admins
     private final AccountService accountService;
     private final AccountMapper accountMapper;
 
@@ -40,11 +45,20 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','CUSTOMER')")
     public ResponseEntity<AccountResponse> updateAccount(
             @PathVariable(name = "id") Integer id,
             @Valid @RequestBody AccountRequest accountRequest) {
-        Account account = accountService.updateAccount(accountMapper.map(accountRequest, id));
+        Account account = accountMapper.map(accountRequest, id);
+
+        new PrincipalDataViolationChain<>(account)
+                .add(new AdminSelfDemoteViolation())
+                .add(new AdminSelfDeactivateViolation())
+                .add(new CustomerSelfPromoteViolation())
+                .add(new CustomerTargetingAnotherViolation())
+                .verify();
+
+        account = accountService.updateAccount(account);
         return ResponseEntity.ok(accountMapper.map(account));
     }
 }

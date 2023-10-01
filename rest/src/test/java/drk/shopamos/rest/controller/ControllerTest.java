@@ -1,14 +1,18 @@
 package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
-import static drk.shopamos.rest.service.ServiceTest.MSG_BODY_UNREADABLE;
-import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_EMAIL;
-import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_EMPTY;
-import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_MAX_LENGTH;
-import static drk.shopamos.rest.service.ServiceTest.MSG_FIELD_PASSWORD;
-import static drk.shopamos.rest.service.ServiceTest.MSG_FORM_FIELD;
-import static drk.shopamos.rest.service.ServiceTest.MSG_NOT_FOUND_ID;
-import static drk.shopamos.rest.service.ServiceTest.MSG_PARAM_WRONG_TYPE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_BODY_UNREADABLE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_DEACTIVATE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_DEMOTE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_PROMOTE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_TARGET_OTHERS;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMAIL;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMPTY;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_MAX_LENGTH;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_PASSWORD;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FORM_FIELD;
+import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
+import static drk.shopamos.rest.mother.MessageMother.MSG_PARAM_WRONG_TYPE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -83,6 +87,25 @@ public abstract class ControllerTest {
         assertFormFieldError(errorResponse, fieldName, message);
     }
 
+    protected void assertCustomerTargetingOthersError(ErrorResponse errorResponse) {
+        assertThat(
+                errorResponse.getMessage(),
+                is(messageProvider.getMessage(MSG_CANNOT_TARGET_OTHERS)));
+    }
+
+    protected void assertCustomerSelfPromoteError(ErrorResponse errorResponse) {
+        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_PROMOTE)));
+    }
+
+    protected void assertAdminSelfDeactivateError(ErrorResponse errorResponse) {
+        assertThat(
+                errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_DEACTIVATE)));
+    }
+
+    protected void assertAdminSelfDemoteError(ErrorResponse errorResponse) {
+        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_DEMOTE)));
+    }
+
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
         assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_FORM_FIELD)));
     }
@@ -129,16 +152,17 @@ public abstract class ControllerTest {
                 .findFirst();
     }
 
-    protected String adminToken() {
-        return getJwtToken(true);
+    protected String adminToken(Integer accountId) {
+        return getJwtToken(accountId, true);
     }
 
-    protected String customerToken() {
-        return getJwtToken(false);
+    protected String customerToken(Integer accountId) {
+        return getJwtToken(accountId, false);
     }
 
-    private String getJwtToken(boolean isAdmin) {
+    private String getJwtToken(Integer accountId, boolean isAdmin) {
         Account account = new Account();
+        account.setId(accountId);
         account.setEmail(LUFFY_EMAIL);
         account.setAdmin(isAdmin);
         when(accountService.loadUserByUsername(LUFFY_EMAIL)).thenReturn(account);
