@@ -40,7 +40,7 @@ public class AccountService implements UserDetailsService {
 
     public Account createAccount(Account account) {
         validateEmailDoesNotExist(account.getEmail());
-        account.setPassword(passwordEncoder.encode(account.getPassword()));
+        encodePassword(account);
         return accountRepository.save(account);
     }
 
@@ -48,7 +48,7 @@ public class AccountService implements UserDetailsService {
         validateIdExists(account.getId());
         validatePrincipalNotDeactivatingHimself(account.getId(), account.isActive());
         validatePrincipalNotDemotingHimself(account.getId(), account.isAdmin());
-        account.setPassword(passwordEncoder.encode(account.getPassword()));
+        encodePassword(account);
         return accountRepository.save(account);
     }
 
@@ -74,6 +74,10 @@ public class AccountService implements UserDetailsService {
         if (!isAdmin && getPrincipal().getId().equals(accountId)) {
             throw new IllegalDataException(msgProvider.getMessage(MSG_CANNOT_DEMOTE));
         }
+    }
+
+    private void encodePassword(Account account) {
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
     }
 
     private Account getPrincipal() {

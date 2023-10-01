@@ -23,6 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/accounts")
 public class AccountController {
+    //TODO: unauthenticated users can create ""customer"" accounts
+    //TODO: customers can update themselves but not make themselves admin
+    //TODO: customers can delete themselves
+    //TODO: GET /accounts/{Id}. Customers can get themselves
+    //TODO: GET /accounts?queryPrams. Only available for admins
     private final AccountService accountService;
     private final AccountMapper accountMapper;
 
