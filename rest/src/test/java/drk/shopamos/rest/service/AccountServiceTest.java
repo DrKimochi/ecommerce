@@ -114,4 +114,21 @@ class AccountServiceTest extends ServiceTest {
         testee.deleteAccount(LUFFY_ID);
         verify(accountRepository).deleteById(LUFFY_ID);
     }
+
+    @Test
+    @DisplayName("getAccount - returns account when it is found")
+    void getAccount_returnsAccount_whenItIsFound() {
+        Account luffy = buildAdminLuffy();
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(luffy));
+        Account returnedAccount = testee.getAccount(LUFFY_ID);
+        assertThat(luffy, is(returnedAccount));
+    }
+
+    @Test
+    @DisplayName("getAccount - throws exception when it is not found")
+    void getAccount_throwsException_whenNotFound() {
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> testee.getAccount(LUFFY_ID));
+        verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
+    }
 }

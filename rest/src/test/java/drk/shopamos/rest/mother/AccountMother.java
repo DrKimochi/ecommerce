@@ -14,6 +14,7 @@ public class AccountMother {
     public static final String LUFFY_PWD = "Meat1234";
     public static final String LUFFY_ENCODED_PWD = "meat_encoded";
     public static final String ZORO_EMAIL = "zoro@mugiwara.com";
+    public static final Integer VIVI_ID = 10;
     public static final String VIVI_EMAIL = "vivi@mugiwara.com";
 
     public static Account buildCustomerNamiWithId() {
@@ -58,15 +59,6 @@ public class AccountMother {
                 .name(NAMI_NAME)
                 .email(NAMI_EMAIL)
                 .password(NAMI_PWD)
-                .build();
-    }
-
-    public static AccountRequest buildAdminRequestLuffy() {
-        return AccountRequest.builder()
-                .name(LUFFY_NAME)
-                .email(LUFFY_EMAIL)
-                .password(LUFFY_PWD)
-                .admin(true)
                 .build();
     }
 }

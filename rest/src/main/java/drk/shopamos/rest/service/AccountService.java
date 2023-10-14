@@ -17,6 +17,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.function.Supplier;
+
 @Service
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
@@ -28,10 +30,7 @@ public class AccountService implements UserDetailsService {
     public Account loadUserByUsername(String username) {
         return accountRepository
                 .findByEmail(username)
-                .orElseThrow(
-                        () ->
-                                new UsernameNotFoundException(
-                                        msgProvider.getMessage(MSG_NOT_FOUND_USER, username)));
+                .orElseThrow(aUsernameNotFoundException(username));
     }
 
     public Account createAccount(Account account) {
@@ -51,6 +50,10 @@ public class AccountService implements UserDetailsService {
         accountRepository.deleteById(id);
     }
 
+    public Account getAccount(Integer id) {
+        return accountRepository.findById(id).orElseThrow(anEntityNotFoundException(id));
+    }
+
     private void validateEmailDoesNotExist(String email) {
         if (accountRepository.existsByEmail(email)) {
             throw new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
@@ -61,6 +64,15 @@ public class AccountService implements UserDetailsService {
         if (!accountRepository.existsById(id)) {
             throw new EntityNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_ID, id));
         }
+    }
+
+    private Supplier<EntityNotFoundException> anEntityNotFoundException(Integer id) {
+        return () -> new EntityNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_ID, id));
+    }
+
+    private Supplier<UsernameNotFoundException> aUsernameNotFoundException(String username) {
+        return () ->
+                new UsernameNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_USER, username));
     }
 
     private void encodePassword(Account account) {

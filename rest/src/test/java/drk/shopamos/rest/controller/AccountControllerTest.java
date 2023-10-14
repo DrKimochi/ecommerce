@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -20,7 +21,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 
 import drk.shopamos.rest.argument.AccountCreateUpdateUriArguments;
-import drk.shopamos.rest.argument.AccountDeleteUpdateUriArguments;
+import drk.shopamos.rest.argument.AccountGetDeleteUpdateUriArguments;
 import drk.shopamos.rest.argument.BadEmailArguments;
 import drk.shopamos.rest.argument.BadPasswordArguments;
 import drk.shopamos.rest.controller.mapper.AccountMapperImpl;
@@ -44,7 +45,7 @@ import org.springframework.test.context.ContextConfiguration;
 public final class AccountControllerTest extends ControllerTest {
 
     public static final String CREATE_URI = "/v1/accounts";
-    public static final String DELETE_UPDATE_URI = "/v1/accounts/{id}";
+    public static final String GET_DELETE_UPDATE_URI = "/v1/accounts/{id}";
     @Autowired PasswordEncoder passwordEncoder;
 
     @ParameterizedTest
@@ -174,7 +175,7 @@ public final class AccountControllerTest extends ControllerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(AccountDeleteUpdateUriArguments.class)
+    @ArgumentsSource(AccountGetDeleteUpdateUriArguments.class)
     @DisplayName(
             "deleteUpdateAccount - when id cannot be converted to integer then return 400 with message")
     void deleteUpdateAccount_whenInvalidIdType_thenReturn400(
@@ -194,7 +195,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         requestBody.setAdmin(true);
         ErrorResponse errorResponse =
-                getMvc().send(PUT, DELETE_UPDATE_URI, NAMI_ID)
+                getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
                         .withJwt(customerToken(NAMI_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(FORBIDDEN)
@@ -204,10 +205,10 @@ public final class AccountControllerTest extends ControllerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(AccountDeleteUpdateUriArguments.class)
+    @ArgumentsSource(AccountGetDeleteUpdateUriArguments.class)
     @DisplayName(
-            "deleteUpdateAccount - when customer is trying to delete or update some other account then return 403 with message")
-    void deleteUpdateAccount_whenCustomerTargetOtherAccount_thenReturn403(
+            "getDeleteUpdateAccount - when customer is trying to get, delete or update some other account then return 403 with message")
+    void getDeleteUpdateAccount_whenCustomerTargetOtherAccount_thenReturn403(
             HttpMethod httpMethod, String uri) throws Exception {
         AccountRequest requestBody = buildCustomerRequestNami();
         ErrorResponse errorResponse =
@@ -227,7 +228,7 @@ public final class AccountControllerTest extends ControllerTest {
         Account nami = buildCustomerNamiWithId();
         when(accountService.updateAccount(nami)).thenReturn(nami);
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(PUT, DELETE_UPDATE_URI, NAMI_ID)
+        getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
                 .withJwt(customerToken(NAMI_ID))
                 .withBody(requestBody)
                 .thenExpectStatus(OK);
@@ -242,7 +243,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         requestBody.setAdmin(true);
         requestBody.setActive(false);
-        getMvc().send(PUT, DELETE_UPDATE_URI, NAMI_ID)
+        getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
                 .withJwt(adminToken(LUFFY_ID))
                 .withBody(requestBody)
                 .thenExpectStatus(OK);
@@ -256,23 +257,20 @@ public final class AccountControllerTest extends ControllerTest {
         when(accountService.updateAccount(nami)).thenReturn(nami);
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
-                getMvc().send(PUT, DELETE_UPDATE_URI, NAMI_ID)
+                getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
                         .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
 
-        assertThat(accountResponse.getName(), is(NAMI_NAME));
-        assertThat(accountResponse.getId(), is(NAMI_ID));
-        assertThat(accountResponse.getActive(), is(true));
-        assertThat(accountResponse.getAdmin(), is(false));
+        assertAccountNami(accountResponse);
     }
 
     @Test
     @DisplayName(
             "deleteAccount - when user is admin then call service layer and return 200 response")
     void deleteAccount_whenUserIsAdmin_thenReturn200() throws Exception {
-        getMvc().send(DELETE, DELETE_UPDATE_URI, NAMI_ID)
+        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, NAMI_ID)
                 .withJwt(adminToken(LUFFY_ID))
                 .thenExpectStatus(OK);
         verify(accountService).deleteAccount(NAMI_ID);
@@ -282,9 +280,43 @@ public final class AccountControllerTest extends ControllerTest {
     @DisplayName(
             "deleteAccount - when user is customer deleting himself then call service layer and return 200 response")
     void deleteAccount_whenUserIsCustomer_thenReturn200() throws Exception {
-        getMvc().send(DELETE, DELETE_UPDATE_URI, NAMI_ID)
+        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, NAMI_ID)
                 .withJwt(customerToken(NAMI_ID))
                 .thenExpectStatus(OK);
         verify(accountService).deleteAccount(NAMI_ID);
+    }
+
+    @Test
+    @DisplayName("getAccount - when user is admin then call service layer and return 200 response")
+    void getAccount_whenUserIsAdmin_thenReturn200() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.getAccount(NAMI_ID)).thenReturn(nami);
+        AccountResponse response =
+                getMvc().send(GET, GET_DELETE_UPDATE_URI, NAMI_ID)
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse.class);
+        assertAccountNami(response);
+    }
+
+    @Test
+    @DisplayName(
+            "getAccount - when user is customer fetching himself then call service layer and return 200 response")
+    void getAccount_whenUserIsCustomer_thenReturn200() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.getAccount(NAMI_ID)).thenReturn(nami);
+        AccountResponse response =
+                getMvc().send(GET, GET_DELETE_UPDATE_URI, NAMI_ID)
+                        .withJwt(customerToken(NAMI_ID))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse.class);
+        assertAccountNami(response);
+    }
+
+    private void assertAccountNami(AccountResponse accountResponse) {
+        assertThat(accountResponse.getName(), is(NAMI_NAME));
+        assertThat(accountResponse.getId(), is(NAMI_ID));
+        assertThat(accountResponse.getActive(), is(true));
+        assertThat(accountResponse.getAdmin(), is(false));
     }
 }

@@ -1,7 +1,7 @@
 package drk.shopamos.rest.argument;
 
 import static drk.shopamos.rest.controller.AccountControllerTest.CREATE_URI;
-import static drk.shopamos.rest.controller.AccountControllerTest.DELETE_UPDATE_URI;
+import static drk.shopamos.rest.controller.AccountControllerTest.GET_DELETE_UPDATE_URI;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
@@ -17,6 +17,7 @@ public class AccountCreateUpdateUriArguments implements ArgumentsProvider {
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
         return Stream.of(
-                Arguments.of(POST, CREATE_URI, null), Arguments.of(PUT, DELETE_UPDATE_URI, "123"));
+                Arguments.of(POST, CREATE_URI, null),
+                Arguments.of(PUT, GET_DELETE_UPDATE_URI, "123"));
     }
 }

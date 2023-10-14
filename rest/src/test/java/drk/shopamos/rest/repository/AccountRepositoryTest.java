@@ -1,10 +1,12 @@
 package drk.shopamos.rest.repository;
 
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.VIVI_ID;
 import static drk.shopamos.rest.mother.AccountMother.ZORO_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
 import static drk.shopamos.rest.mother.AccountMother.buildCustomerNamiWithoutId;
@@ -108,6 +110,21 @@ class AccountRepositoryTest {
         assertThat(testee.existsById(accountId), is(true));
         testee.deleteById(accountId);
         assertThat(testee.existsById(accountId), is(false));
+    }
+
+    @Test
+    @DisplayName("findById -  Finds account by Id with fields populated as expected")
+    void findById_whenIdExists_thenReturnAccount() {
+        Optional<Account> accountOpt = testee.findById(LUFFY_ID);
+        assertThat(accountOpt.isPresent(), is(true));
+        assertThat(accountOpt.get(), is(buildAdminLuffy()));
+    }
+
+    @Test
+    @DisplayName("findById - returns empty optional when account is not found")
+    void findById_whenAccountDoesntExist_returnsEmptyOptional() {
+        Optional<Account> accountOpt = testee.findById(VIVI_ID);
+        assertThat(accountOpt.isEmpty(), is(true));
     }
 
     private void assertAccountNamiWithId(Account account) {
