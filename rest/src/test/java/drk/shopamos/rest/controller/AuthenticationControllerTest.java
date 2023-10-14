@@ -1,14 +1,15 @@
 package drk.shopamos.rest.controller;
 
+import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
+import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.OK;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
 import drk.shopamos.rest.controller.request.AuthenticationRequest;
 import drk.shopamos.rest.controller.response.AuthenticationResponse;
 import drk.shopamos.rest.controller.response.ErrorResponse;
@@ -16,81 +17,57 @@ import drk.shopamos.rest.service.AuthenticationService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
-@WebMvcTest(excludeAutoConfiguration = SecurityAutoConfiguration.class)
-@ContextConfiguration(classes = {AuthenticationController.class, ControllerExceptionHandler.class})
+@WebMvcTest
+@ContextConfiguration(classes = {AuthenticationController.class})
 class AuthenticationControllerTest extends ControllerTest {
-
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
+    private static final String LOGIN_URL = "/v1/auth/login";
     @MockBean private AuthenticationService authService;
 
     @Test
     @DisplayName("login - when body is missing then return 400 response with message")
     void login_whenBodyMissing_thenReturn400ErrorResponse() throws Exception {
-        MvcResult mvcResult =
-                mockMvc.perform(post("/v1/auth/login").contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isBadRequest())
-                        .andReturn();
-
         ErrorResponse errorResponse =
-                objectMapper.readValue(
-                        mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
+                getMvc().send(POST, LOGIN_URL)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
 
-        assertRequestBodyUnreadableError(errorResponse);
+        errorResponseAssert.requestBodyUnreadable(errorResponse);
     }
 
     @Test
     @DisplayName(
-            "login - when null username or passsword then return 400 response with field validation errors")
+            "login - when null username or password then return 400 response with field validation errors")
     void login_whenFieldsAreNull_thenReturn400ErrorResponse() throws Exception {
-        MvcResult mvcResult =
-                mockMvc.perform(
-                                post("/v1/auth/login")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(
-                                                objectMapper.writeValueAsString(
-                                                        buildRequest(null, null))))
-                        .andExpect(status().isBadRequest())
-                        .andReturn();
+        AuthenticationRequest body = buildRequest(null, null);
 
         ErrorResponse errorResponse =
-                objectMapper.readValue(
-                        mvcResult.getResponse().getContentAsString(), ErrorResponse.class);
+                getMvc().send(POST, LOGIN_URL)
+                        .withBody(body)
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
-        assertInvalidFormError(errorResponse);
-        assertEmptyFieldValidation(errorResponse, "username");
-        assertEmptyFieldValidation(errorResponse, "password");
+        errorResponseAssert.invalidForm(errorResponse);
+        errorResponseAssert.emptyField(errorResponse, "username");
+        errorResponseAssert.emptyField(errorResponse, "password");
     }
 
     @Test
     @DisplayName(
             "login - when username and password provided then call service layer and return 200 response with jwt token")
-    void login_whenBadFormatEmail_thenReturn400ErrorResponse() throws Exception {
-        when(authService.login(SOME_USERNAME, SOME_PASSWORD)).thenReturn(SOME_TOKEN);
-        MvcResult mvcResult =
-                mockMvc.perform(
-                                post("/v1/auth/login")
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(
-                                                objectMapper.writeValueAsString(
-                                                        buildRequest(
-                                                                "username@domain.com", "abc123"))))
-                        .andExpect(status().isOk())
-                        .andReturn();
+    void login_whenRequiredDataProvided_thenReturn200Response() throws Exception {
+        when(authService.login(NAMI_EMAIL, NAMI_PWD)).thenReturn(SOME_TOKEN);
 
+        AuthenticationRequest body = buildRequest(NAMI_EMAIL, NAMI_PWD);
         AuthenticationResponse response =
-                objectMapper.readValue(
-                        mvcResult.getResponse().getContentAsString(), AuthenticationResponse.class);
+                getMvc().send(POST, LOGIN_URL)
+                        .withBody(body)
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AuthenticationResponse.class);
 
         assertThat(response.getJwtToken(), is(SOME_TOKEN));
     }

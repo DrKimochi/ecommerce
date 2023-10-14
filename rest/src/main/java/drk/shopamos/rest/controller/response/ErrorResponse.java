@@ -2,20 +2,21 @@ package drk.shopamos.rest.controller.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ErrorResponse {
+    private String exceptionId;
     private String message;
     private List<FieldValidationError> fieldValidationErrors;
 
-    @Data
+    @Getter
     @AllArgsConstructor
     public static class FieldValidationError {
         private String fieldName;

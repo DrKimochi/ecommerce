@@ -1,65 +1,75 @@
 package drk.shopamos.rest.controller;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 
-import drk.shopamos.rest.controller.response.ErrorResponse;
+import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import drk.shopamos.rest.config.JwtAuthenticationFilter;
+import drk.shopamos.rest.config.JwtTokenHelper;
+import drk.shopamos.rest.config.MessageProvider;
+import drk.shopamos.rest.config.SecurityConfiguration;
+import drk.shopamos.rest.config.ShopamosConfiguration;
+import drk.shopamos.rest.controller.advice.ControllerExceptionHandler;
+import drk.shopamos.rest.controller.assertion.ErrorResponseAssert;
+import drk.shopamos.rest.model.entity.Account;
+import drk.shopamos.rest.service.AccountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Locale;
-import java.util.Optional;
-
+@ContextConfiguration(
+        classes = {
+            ControllerExceptionHandler.class,
+            MessageProvider.class,
+            ShopamosConfiguration.class,
+            SecurityConfiguration.class,
+            JwtAuthenticationFilter.class,
+            JwtTokenHelper.class,
+            ErrorResponseAssert.class
+        })
 public abstract class ControllerTest {
-    private static final String PROPERTY_FORM_FIELD = "error.form.field";
-    private static final String PROPERTY_FIELD_EMPTY = "error.form.field.empty";
-    private static final String PROPERTY_FIELD_EMAIL = "error.form.field.email";
-    private static final String PROPERTY_BODY_UNREADABLE = "error.request.body.unreadable";
-    protected static String SOME_USERNAME = "username@domain.com";
-    protected static String SOME_PASSWORD = "abc123";
+
     protected static String SOME_TOKEN = "xxxxx.yyyyy.zzzzz";
-    @Autowired private MessageSource messageSource;
 
-    protected void asserEmailValidation(ErrorResponse errorResponse, String fieldName) {
-        assertFieldErrorValidation(errorResponse, fieldName, PROPERTY_FIELD_EMAIL);
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    protected ObjectMapper objectMapper;
+
+    @Autowired protected MessageProvider messageProvider;
+    @Autowired protected JwtTokenHelper jwtTokenHelper;
+    @Autowired protected ErrorResponseAssert errorResponseAssert;
+    @MockBean protected AccountService accountService;
+
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private MockMvc mockMvc;
+
+    public MockMvcHandler getMvc() {
+        return new MockMvcHandler(mockMvc, objectMapper);
     }
 
-    protected void assertEmptyFieldValidation(ErrorResponse errorResponse, String fieldName) {
-        assertFieldErrorValidation(errorResponse, fieldName, PROPERTY_FIELD_EMPTY);
+    protected String adminToken(Integer accountId) {
+        return getJwtToken(accountId, true);
     }
 
-    protected void assertInvalidFormError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_FORM_FIELD)));
+    protected String customerToken(Integer accountId) {
+        return getJwtToken(accountId, false);
     }
 
-    protected void assertRequestBodyUnreadableError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(getMessageFromBundle(PROPERTY_BODY_UNREADABLE)));
+    protected String token(Integer accountId, boolean isAdmin) {
+        return getJwtToken(accountId, isAdmin);
     }
 
-    private void assertFieldErrorValidation(
-            ErrorResponse errorResponse, String fieldName, String fieldMsgProperty) {
-
-        Optional<ErrorResponse.FieldValidationError> fieldError =
-                findFieldValidationError(errorResponse, fieldName);
-
-        assertThat(fieldError.isPresent(), is(true));
-
-        assertThat(fieldError.get().getFieldMessage(), is(getMessageFromBundle(fieldMsgProperty)));
+    private String getJwtToken(Integer accountId, boolean isAdmin) {
+        Account account = new Account();
+        account.setId(accountId);
+        account.setEmail(LUFFY_EMAIL);
+        account.setAdmin(isAdmin);
+        when(accountService.loadUserByUsername(LUFFY_EMAIL)).thenReturn(account);
+        return jwtTokenHelper.generateToken(account);
     }
-
-    private Optional<ErrorResponse.FieldValidationError> findFieldValidationError(
-            ErrorResponse errorResponse, String fieldName) {
-        return errorResponse.getFieldValidationErrors().stream()
-                .filter(
-                        fieldValidationError ->
-                                fieldValidationError.getFieldName().equals(fieldName))
-                .findFirst();
-    }
-
-    private String getMessageFromBundle(String propertyName) {
-        return messageSource.getMessage(propertyName, null, Locale.getDefault());
-    }
-
-
 }

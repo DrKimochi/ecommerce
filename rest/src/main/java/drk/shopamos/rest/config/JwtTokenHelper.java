@@ -27,8 +27,8 @@ public class JwtTokenHelper {
     private final Clock clock;
 
     JwtTokenHelper(
-            @Value("${jwt.secret_key}") String secretKey,
-            @Value("${jwt.expiration_seconds}") Integer expirationSeconds,
+            @Value("${shopamos.jwt.secret_key}") String secretKey,
+            @Value("${shopamos.jwt.expiration_seconds}") Integer expirationSeconds,
             @Autowired Clock clock) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.signKey = Keys.hmacShaKeyFor(keyBytes);
