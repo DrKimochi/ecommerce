@@ -59,7 +59,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .withJwt(adminToken(LUFFY_ID))
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertRequestBodyUnreadableError(errorResponse);
+        errorResponseAssert.requestBodyUnreadable(errorResponse);
     }
 
     @ParameterizedTest
@@ -75,9 +75,9 @@ public final class AccountControllerTest extends ControllerTest {
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertEmptyFieldError(errorResponse, "name");
-        assertEmptyFieldError(errorResponse, "email");
-        assertEmptyFieldError(errorResponse, "password");
+        errorResponseAssert.emptyField(errorResponse, "name");
+        errorResponseAssert.emptyField(errorResponse, "email");
+        errorResponseAssert.emptyField(errorResponse, "password");
     }
 
     @ParameterizedTest
@@ -92,7 +92,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertEmailFieldError(errorResponse);
+        errorResponseAssert.emailField(errorResponse);
     }
 
     @ParameterizedTest
@@ -108,7 +108,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertMaxLengthFieldError(errorResponse, "name", "100");
+        errorResponseAssert.maxLengthField(errorResponse, "name", "100");
     }
 
     @ParameterizedTest
@@ -130,7 +130,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertPasswordFieldError(errorResponse);
+        errorResponseAssert.passwordField(errorResponse);
     }
 
     @Test
@@ -183,7 +183,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .withJwt(adminToken(LUFFY_ID))
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
-        assertArgumentMismatchError(errorResponse, "id", "integer");
+        errorResponseAssert.argumentMismatch(errorResponse, "id", "integer");
     }
 
     @Test
@@ -199,7 +199,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .thenExpectStatus(FORBIDDEN)
                         .getResponseBody(ErrorResponse.class);
 
-        assertCustomerSelfPromoteError(errorResponse);
+        errorResponseAssert.customerSelfPromote(errorResponse);
     }
 
     @ParameterizedTest
@@ -216,7 +216,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .thenExpectStatus(FORBIDDEN)
                         .getResponseBody(ErrorResponse.class);
 
-        assertCustomerTargetingOthersError(errorResponse);
+        errorResponseAssert.customerTargetingOthers(errorResponse);
     }
 
     @ParameterizedTest

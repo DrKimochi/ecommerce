@@ -10,8 +10,6 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import drk.shopamos.rest.controller.request.AuthenticationRequest;
 import drk.shopamos.rest.controller.response.AuthenticationResponse;
 import drk.shopamos.rest.controller.response.ErrorResponse;
@@ -22,9 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MvcResult;
-
-import java.io.UnsupportedEncodingException;
 
 @WebMvcTest
 @ContextConfiguration(classes = {AuthenticationController.class})
@@ -40,7 +35,7 @@ class AuthenticationControllerTest extends ControllerTest {
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
 
-        assertRequestBodyUnreadableError(errorResponse);
+        errorResponseAssert.requestBodyUnreadable(errorResponse);
     }
 
     @Test
@@ -56,9 +51,9 @@ class AuthenticationControllerTest extends ControllerTest {
                         .getResponseBody(ErrorResponse.class);
 
         assertThat(errorResponse.getFieldValidationErrors().size(), is(2));
-        assertInvalidFormError(errorResponse);
-        assertEmptyFieldError(errorResponse, "username");
-        assertEmptyFieldError(errorResponse, "password");
+        errorResponseAssert.invalidForm(errorResponse);
+        errorResponseAssert.emptyField(errorResponse, "username");
+        errorResponseAssert.emptyField(errorResponse, "password");
     }
 
     @Test
@@ -80,5 +75,4 @@ class AuthenticationControllerTest extends ControllerTest {
     private AuthenticationRequest buildRequest(String username, String password) {
         return AuthenticationRequest.builder().username(username).password(password).build();
     }
-
 }
