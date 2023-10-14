@@ -137,20 +137,8 @@ public final class AccountControllerTest extends ControllerTest {
 
     @Test
     @DisplayName(
-            "createAccount - when required data provided and user role is ADMIN then call service layer and return 200")
+            "createAccount - when unauthenticated user provides required data then call service layer and return 200")
     void createAccount_whenRequiredDataProvided_thenReturn200() throws Exception {
-        when(accountService.createAccount(buildCustomerNamiWithoutId()))
-                .thenReturn(buildCustomerNamiWithId());
-        AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(POST, ACCOUNT_URI)
-                .withJwt(adminToken(NAMI_ID))
-                .withBody(requestBody)
-                .thenExpectStatus(OK);
-    }
-
-    @Test
-    @DisplayName("createAccount - unauthenticated users can create accounts")
-    void createAccount_whenUnauthenticatedUser_thenReturn200() throws Exception {
         when(accountService.createAccount(buildCustomerNamiWithoutId()))
                 .thenReturn(buildCustomerNamiWithId());
         AccountRequest requestBody = buildCustomerRequestNami();
@@ -166,7 +154,6 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
                 getMvc().send(POST, ACCOUNT_URI)
-                        .withJwt(adminToken(NAMI_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
@@ -182,7 +169,7 @@ public final class AccountControllerTest extends ControllerTest {
             HttpMethod httpMethod, String uri, String id) throws Exception {
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, id)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
         errorResponseAssert.argumentMismatch(errorResponse, "id", "integer");
