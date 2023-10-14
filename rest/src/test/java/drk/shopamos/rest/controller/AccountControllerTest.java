@@ -34,6 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpMethod;
@@ -168,10 +169,7 @@ public final class AccountControllerTest extends ControllerTest {
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
 
-        assertThat(accountResponse.getId(), is(NAMI_ID));
-        assertThat(accountResponse.getActive(), is(true));
-        assertThat(accountResponse.getAdmin(), is(false));
-        assertThat(accountResponse.getName(), is(NAMI_NAME));
+        assertAccountNami(accountResponse);
     }
 
     @ParameterizedTest
@@ -221,30 +219,16 @@ public final class AccountControllerTest extends ControllerTest {
         assertCustomerTargetingOthersError(errorResponse);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     @DisplayName(
-            "updateAccount - when customer updates himself with valid data then call service layer and return 200")
-    void updateAccount_whenCustomerUpdatesHimself_thenReturn200() throws Exception {
+            "updateAccount - when customer or admin updates account with valid data then call service layer and return 200")
+    void updateAccount_whenAuthenticatedUser_thenReturn200(boolean isAdmin) throws Exception {
         Account nami = buildCustomerNamiWithId();
         when(accountService.updateAccount(nami)).thenReturn(nami);
         AccountRequest requestBody = buildCustomerRequestNami();
         getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
-                .withJwt(customerToken(NAMI_ID))
-                .withBody(requestBody)
-                .thenExpectStatus(OK);
-    }
-
-    @Test
-    @DisplayName(
-            "updateAccount - when admin updates accounts with valid data then call service layer and return 200")
-    void updateAccount_whenAdminUpdatesOthers_thenReturn200() throws Exception {
-        Account nami = buildCustomerNamiWithId();
-        when(accountService.updateAccount(nami)).thenReturn(nami);
-        AccountRequest requestBody = buildCustomerRequestNami();
-        requestBody.setAdmin(true);
-        requestBody.setActive(false);
-        getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
-                .withJwt(adminToken(LUFFY_ID))
+                .withJwt(token(NAMI_ID, isAdmin))
                 .withBody(requestBody)
                 .thenExpectStatus(OK);
     }
@@ -266,48 +250,27 @@ public final class AccountControllerTest extends ControllerTest {
         assertAccountNami(accountResponse);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     @DisplayName(
-            "deleteAccount - when user is admin then call service layer and return 200 response")
-    void deleteAccount_whenUserIsAdmin_thenReturn200() throws Exception {
-        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, NAMI_ID)
-                .withJwt(adminToken(LUFFY_ID))
+            "deleteAccount - when user is customer or admin then call service layer and return 200 response")
+    void deleteAccount_whenUserAuthenticated_thenReturn200(boolean isAdmin) throws Exception {
+        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, LUFFY_ID)
+                .withJwt(token(LUFFY_ID, isAdmin))
                 .thenExpectStatus(OK);
-        verify(accountService).deleteAccount(NAMI_ID);
+        verify(accountService).deleteAccount(LUFFY_ID);
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     @DisplayName(
-            "deleteAccount - when user is customer deleting himself then call service layer and return 200 response")
-    void deleteAccount_whenUserIsCustomer_thenReturn200() throws Exception {
-        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, NAMI_ID)
-                .withJwt(customerToken(NAMI_ID))
-                .thenExpectStatus(OK);
-        verify(accountService).deleteAccount(NAMI_ID);
-    }
-
-    @Test
-    @DisplayName("getAccount - when user is admin then call service layer and return 200 response")
-    void getAccount_whenUserIsAdmin_thenReturn200() throws Exception {
+            "getAccount - when user is customer or admin then call service layer and return 200 response")
+    void getAccount_whenUserAuthenticated_thenReturn200(boolean isAdmin) throws Exception {
         Account nami = buildCustomerNamiWithId();
-        when(accountService.getAccount(NAMI_ID)).thenReturn(nami);
+        when(accountService.getAccount(LUFFY_ID)).thenReturn(nami);
         AccountResponse response =
-                getMvc().send(GET, GET_DELETE_UPDATE_URI, NAMI_ID)
-                        .withJwt(adminToken(LUFFY_ID))
-                        .thenExpectStatus(OK)
-                        .getResponseBody(AccountResponse.class);
-        assertAccountNami(response);
-    }
-
-    @Test
-    @DisplayName(
-            "getAccount - when user is customer fetching himself then call service layer and return 200 response")
-    void getAccount_whenUserIsCustomer_thenReturn200() throws Exception {
-        Account nami = buildCustomerNamiWithId();
-        when(accountService.getAccount(NAMI_ID)).thenReturn(nami);
-        AccountResponse response =
-                getMvc().send(GET, GET_DELETE_UPDATE_URI, NAMI_ID)
-                        .withJwt(customerToken(NAMI_ID))
+                getMvc().send(GET, GET_DELETE_UPDATE_URI, LUFFY_ID)
+                        .withJwt(token(LUFFY_ID, isAdmin))
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
         assertAccountNami(response);

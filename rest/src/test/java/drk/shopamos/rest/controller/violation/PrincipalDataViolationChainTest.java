@@ -27,8 +27,8 @@ class PrincipalDataViolationChainTest {
     private static final String ERROR_MESSAGE_CODE = "ERROR_MESSAGE_CODE";
     @Mock Authentication authentication;
     @Mock SecurityContext securityContext;
-    @Mock AdminSelfDemoteViolation violation;
-    @Mock AdminSelfDeactivateViolation anotherViolation;
+    @Mock CustomerSelfPromoteViolation violation;
+    @Mock CustomerTargetingAnotherViolation anotherViolation;
     Account principal;
     Account targetAccount;
     PrincipalDataViolationChain<Account> testee;

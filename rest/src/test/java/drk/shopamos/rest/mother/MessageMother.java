@@ -11,8 +11,6 @@ public class MessageMother {
     public static final String MSG_NOT_FOUND_ID = "error.service.entity.notfound.id";
     public static final String MSG_EXISTS_EMAIL = "error.service.entity.exists.email";
     public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";
-    public static final String MSG_CANNOT_DEMOTE = "error.forbidden.entity.cannot.demote";
-    public static final String MSG_CANNOT_DEACTIVATE = "error.forbidden.entity.cannot.deactivate";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
     public static final String MSG_CANNOT_TARGET_OTHERS =
             "error.forbidden.entity.cannot.target.others";

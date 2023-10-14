@@ -17,9 +17,7 @@ public class MessageProvider {
     public static final String MSG_EXISTS_EMAIL = "error.service.entity.exists.email";
     public static final String MSG_FORM_FIELD = "error.form.field";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
-    public static final String MSG_CANNOT_DEMOTE = "error.forbidden.entity.cannot.demote";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
-    public static final String MSG_CANNOT_DEACTIVATE = "error.forbidden.entity.cannot.deactivate";
     public static final String MSG_CANNOT_TARGET_OTHERS =
             "error.forbidden.entity.cannot.target.others";
     public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";

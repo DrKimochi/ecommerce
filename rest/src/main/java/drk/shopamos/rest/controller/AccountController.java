@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/v1/accounts")
 public class AccountController {
-    // TODO: GET /accounts/{Id}. Customers can get themselves
     // TODO: GET /accounts?queryPrams. Only available for admins
     private final AccountService accountService;
     private final AccountMapper accountMapper;

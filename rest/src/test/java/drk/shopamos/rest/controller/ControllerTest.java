@@ -2,8 +2,6 @@ package drk.shopamos.rest.controller;
 
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.MessageMother.MSG_BODY_UNREADABLE;
-import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_DEACTIVATE;
-import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_DEMOTE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_PROMOTE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_TARGET_OTHERS;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMAIL;
@@ -97,15 +95,6 @@ public abstract class ControllerTest {
         assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_PROMOTE)));
     }
 
-    protected void assertAdminSelfDeactivateError(ErrorResponse errorResponse) {
-        assertThat(
-                errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_DEACTIVATE)));
-    }
-
-    protected void assertAdminSelfDemoteError(ErrorResponse errorResponse) {
-        assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_CANNOT_DEMOTE)));
-    }
-
     protected void assertInvalidFormError(ErrorResponse errorResponse) {
         assertThat(errorResponse.getMessage(), is(messageProvider.getMessage(MSG_FORM_FIELD)));
     }
@@ -158,6 +147,10 @@ public abstract class ControllerTest {
 
     protected String customerToken(Integer accountId) {
         return getJwtToken(accountId, false);
+    }
+
+    protected String token(Integer accountId, boolean isAdmin) {
+        return getJwtToken(accountId, isAdmin);
     }
 
     private String getJwtToken(Integer accountId, boolean isAdmin) {
