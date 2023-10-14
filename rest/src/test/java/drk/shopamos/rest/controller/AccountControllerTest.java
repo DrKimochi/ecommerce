@@ -58,7 +58,7 @@ public final class AccountControllerTest extends ControllerTest {
             HttpMethod httpMethod, String uri, String uriVariable) throws Exception {
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
         errorResponseAssert.requestBodyUnreadable(errorResponse);
@@ -73,7 +73,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -90,7 +90,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().name(NAMI_NAME).email(email).build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -106,7 +106,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = AccountRequest.builder().name(longName).build();
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -128,7 +128,7 @@ public final class AccountControllerTest extends ControllerTest {
 
         ErrorResponse errorResponse =
                 getMvc().send(httpMethod, uri, uriVariable)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
@@ -231,7 +231,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
                 getMvc().send(PUT, ACCOUNT_URI_WITH_ID, NAMI_ID)
-                        .withJwt(adminToken(LUFFY_ID))
+                        .withJwt(customerToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
