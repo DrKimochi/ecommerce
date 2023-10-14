@@ -2,6 +2,7 @@ package drk.shopamos.rest.repository;
 
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_NAME;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_NAME;
 import static drk.shopamos.rest.mother.AccountMother.NAMI_PWD;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.List;
 import java.util.Optional;
 
 @DataJpaTest
@@ -125,6 +127,53 @@ class AccountRepositoryTest {
     void findById_whenAccountDoesntExist_returnsEmptyOptional() {
         Optional<Account> accountOpt = testee.findById(VIVI_ID);
         assertThat(accountOpt.isEmpty(), is(true));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - finds by name contains and case insensitive")
+    void findAllByAttributes_findsByName() {
+        List<Account> foundAccounts = testee.findAllByAttributes("uFf", null, null, null);
+        assertThat(foundAccounts.size(), is(1));
+        assertThat(foundAccounts.get(0).getName(), is(LUFFY_NAME));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - finds by email contains and case insensitive")
+    void findAllByAttributes_findsByEmail() {
+        List<Account> foundAccounts = testee.findAllByAttributes(null, "uFf", null, null);
+        assertThat(foundAccounts.size(), is(1));
+        assertThat(foundAccounts.get(0).getName(), is(LUFFY_NAME));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - finds by isAdmin")
+    void findAllByAttributes_findsByIsAdmin() {
+        List<Account> foundAccounts = testee.findAllByAttributes(null, null, false, null);
+        assertThat(foundAccounts.size(), is(1));
+        assertThat(foundAccounts.get(0).getEmail(), is(ZORO_EMAIL));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - finds by isActive")
+    void findAllByAttributes_findsByIsActive() {
+        List<Account> foundAccounts = testee.findAllByAttributes(null, null, null, true);
+        assertThat(foundAccounts.size(), is(1));
+        assertThat(foundAccounts.get(0).getName(), is(LUFFY_NAME));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - finds by all attributes")
+    void findAllByAttributes_findsByAll() {
+        List<Account> foundAccounts = testee.findAllByAttributes("zOr", "uGiWara", false, false);
+        assertThat(foundAccounts.size(), is(1));
+        assertThat(foundAccounts.get(0).getEmail(), is(ZORO_EMAIL));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - returns all accounts when no attribute passed")
+    void findAllByAttributes_returnsAllAccounts() {
+        List<Account> foundAccounts = testee.findAllByAttributes(null, null, null, null);
+        assertThat(foundAccounts.size(), is(2));
     }
 
     private void assertAccountNamiWithId(Account account) {

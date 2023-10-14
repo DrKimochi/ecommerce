@@ -39,6 +39,12 @@ public class MockMvcHandler {
                     request(httpMethod, uri, uriVariables).contentType(MediaType.APPLICATION_JSON);
         }
 
+        public MockMvcRequestBuilderHandler withQueryParam(String name, String value) {
+            this.mockHttpServletRequestBuilder =
+                    mockHttpServletRequestBuilder.queryParam(name, value);
+            return this;
+        }
+
         public MockMvcRequestBuilderHandler withJwt(String token) {
             this.mockHttpServletRequestBuilder =
                     mockHttpServletRequestBuilder.header("authorization", "Bearer " + token);

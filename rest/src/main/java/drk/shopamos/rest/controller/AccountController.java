@@ -22,13 +22,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/accounts")
 public class AccountController {
-    // TODO: GET /accounts?queryPrams. Only available for admins
     private final AccountService accountService;
     private final AccountMapper accountMapper;
 
@@ -40,7 +42,6 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN','CUSTOMER')")
     public ResponseEntity<AccountResponse> updateAccount(
             @PathVariable(name = "id") Integer id,
             @Valid @RequestBody AccountRequest accountRequest) {
@@ -56,7 +57,6 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN','CUSTOMER')")
     public ResponseEntity<Void> deleteAccount(@PathVariable(name = "id") Integer id) {
         Account account = accountMapper.map(null, id);
 
@@ -69,7 +69,6 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN','CUSTOMER')")
     public ResponseEntity<AccountResponse> getAccount(@PathVariable(name = "id") Integer id) {
         Account account = accountMapper.map(null, id);
 
@@ -79,5 +78,18 @@ public class AccountController {
 
         account = accountService.getAccount(id);
         return ResponseEntity.ok(accountMapper.map(account));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<AccountResponse>> getAccounts(
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "isAdmin", required = false) Boolean isAdmin,
+            @RequestParam(name = "isActive", required = false) Boolean isActive) {
+
+        List<Account> foundAccounts = accountService.getAccounts(name, email, isAdmin, isActive);
+        List<AccountResponse> response = foundAccounts.stream().map(accountMapper::map).toList();
+        return ResponseEntity.ok(response);
     }
 }

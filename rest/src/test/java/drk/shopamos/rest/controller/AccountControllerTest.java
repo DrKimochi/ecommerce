@@ -41,12 +41,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.List;
+
 @WebMvcTest
 @ContextConfiguration(classes = {AccountController.class, AccountMapperImpl.class})
 public final class AccountControllerTest extends ControllerTest {
 
-    public static final String CREATE_URI = "/v1/accounts";
-    public static final String GET_DELETE_UPDATE_URI = "/v1/accounts/{id}";
+    public static final String ACCOUNT_URI = "/v1/accounts";
+    public static final String ACCOUNT_URI_WITH_ID = "/v1/accounts/{id}";
     @Autowired PasswordEncoder passwordEncoder;
 
     @ParameterizedTest
@@ -140,7 +142,7 @@ public final class AccountControllerTest extends ControllerTest {
         when(accountService.createAccount(buildCustomerNamiWithoutId()))
                 .thenReturn(buildCustomerNamiWithId());
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(POST, CREATE_URI)
+        getMvc().send(POST, ACCOUNT_URI)
                 .withJwt(adminToken(NAMI_ID))
                 .withBody(requestBody)
                 .thenExpectStatus(OK);
@@ -152,7 +154,7 @@ public final class AccountControllerTest extends ControllerTest {
         when(accountService.createAccount(buildCustomerNamiWithoutId()))
                 .thenReturn(buildCustomerNamiWithId());
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(POST, CREATE_URI).withBody(requestBody).thenExpectStatus(OK);
+        getMvc().send(POST, ACCOUNT_URI).withBody(requestBody).thenExpectStatus(OK);
     }
 
     @Test
@@ -163,7 +165,7 @@ public final class AccountControllerTest extends ControllerTest {
                 .thenReturn(buildCustomerNamiWithId());
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
-                getMvc().send(POST, CREATE_URI)
+                getMvc().send(POST, ACCOUNT_URI)
                         .withJwt(adminToken(NAMI_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
@@ -193,7 +195,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         requestBody.setAdmin(true);
         ErrorResponse errorResponse =
-                getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
+                getMvc().send(PUT, ACCOUNT_URI_WITH_ID, NAMI_ID)
                         .withJwt(customerToken(NAMI_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(FORBIDDEN)
@@ -227,7 +229,7 @@ public final class AccountControllerTest extends ControllerTest {
         Account nami = buildCustomerNamiWithId();
         when(accountService.updateAccount(nami)).thenReturn(nami);
         AccountRequest requestBody = buildCustomerRequestNami();
-        getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
+        getMvc().send(PUT, ACCOUNT_URI_WITH_ID, NAMI_ID)
                 .withJwt(token(NAMI_ID, isAdmin))
                 .withBody(requestBody)
                 .thenExpectStatus(OK);
@@ -241,7 +243,7 @@ public final class AccountControllerTest extends ControllerTest {
         when(accountService.updateAccount(nami)).thenReturn(nami);
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
-                getMvc().send(PUT, GET_DELETE_UPDATE_URI, NAMI_ID)
+                getMvc().send(PUT, ACCOUNT_URI_WITH_ID, NAMI_ID)
                         .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
@@ -255,7 +257,7 @@ public final class AccountControllerTest extends ControllerTest {
     @DisplayName(
             "deleteAccount - when user is customer or admin then call service layer and return 200 response")
     void deleteAccount_whenUserAuthenticated_thenReturn200(boolean isAdmin) throws Exception {
-        getMvc().send(DELETE, GET_DELETE_UPDATE_URI, LUFFY_ID)
+        getMvc().send(DELETE, ACCOUNT_URI_WITH_ID, LUFFY_ID)
                 .withJwt(token(LUFFY_ID, isAdmin))
                 .thenExpectStatus(OK);
         verify(accountService).deleteAccount(LUFFY_ID);
@@ -269,11 +271,80 @@ public final class AccountControllerTest extends ControllerTest {
         Account nami = buildCustomerNamiWithId();
         when(accountService.getAccount(LUFFY_ID)).thenReturn(nami);
         AccountResponse response =
-                getMvc().send(GET, GET_DELETE_UPDATE_URI, LUFFY_ID)
+                getMvc().send(GET, ACCOUNT_URI_WITH_ID, LUFFY_ID)
                         .withJwt(token(LUFFY_ID, isAdmin))
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);
         assertAccountNami(response);
+    }
+
+    @Test
+    @DisplayName(
+            "getAccounts - when no request params passed then service layer is invoked with all nulls and return 200 response")
+    void getAccounts_whenNoParamsPassed_thenReturn200Response() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.getAccounts(null, null, null, null)).thenReturn(List.of(nami));
+        AccountResponse[] response =
+                getMvc().send(GET, ACCOUNT_URI)
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse[].class);
+        assertThat(response.length, is(1));
+        assertAccountNami(response[0]);
+    }
+
+    @Test
+    @DisplayName(
+            "getAccounts - when all request params are passed then service layer is invoked with passing down the params and then returns 200 response")
+    void getAccounts_whenAllParamsPassed_thenReturn200Response() throws Exception {
+        Account nami = buildCustomerNamiWithId();
+        when(accountService.getAccounts(NAMI_NAME, NAMI_EMAIL, false, true))
+                .thenReturn(List.of(nami));
+        AccountResponse[] response =
+                getMvc().send(GET, ACCOUNT_URI)
+                        .withQueryParam("name", NAMI_NAME)
+                        .withQueryParam("email", NAMI_EMAIL)
+                        .withQueryParam("isAdmin", "false")
+                        .withQueryParam("isActive", "true")
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(AccountResponse[].class);
+        assertThat(response.length, is(1));
+        assertAccountNami(response[0]);
+    }
+
+    @Test
+    @DisplayName(
+            "getAccounts - when isActive boolean cannot be parsed then return 400 response with message")
+    void getAccounts_whenInvalidIsActiveBoolean_thenReturn400Response() throws Exception {
+        ErrorResponse errorResponse =
+                getMvc().send(GET, ACCOUNT_URI)
+                        .withQueryParam("isActive", "falseee")
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
+        errorResponseAssert.argumentMismatch(errorResponse, "isActive", "boolean");
+    }
+
+    @Test
+    @DisplayName(
+            "getAccounts - when isAdmin boolean cannot be parsed then return 400 response with message")
+    void getAccounts_whenInvalidIsAdminBoolean_thenReturn400Response() throws Exception {
+        ErrorResponse errorResponse =
+                getMvc().send(GET, ACCOUNT_URI)
+                        .withQueryParam("isAdmin", "falseee")
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(BAD_REQUEST)
+                        .getResponseBody(ErrorResponse.class);
+        errorResponseAssert.argumentMismatch(errorResponse, "isAdmin", "boolean");
+    }
+
+    @Test
+    @DisplayName("getAccounts - when user has customer role then return 403 forbidden")
+    void getAccounts_whenUserHasCustomerRole_thenReturn403Response() throws Exception {
+        getMvc().send(GET, ACCOUNT_URI)
+                .withJwt(customerToken(LUFFY_ID))
+                .thenExpectStatus(FORBIDDEN);
     }
 
     private void assertAccountNami(AccountResponse accountResponse) {

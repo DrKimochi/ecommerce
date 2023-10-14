@@ -4,6 +4,7 @@ import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_USER;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ENCODED_PWD;
 import static drk.shopamos.rest.mother.AccountMother.LUFFY_ID;
+import static drk.shopamos.rest.mother.AccountMother.LUFFY_NAME;
 import static drk.shopamos.rest.mother.AccountMother.VIVI_EMAIL;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffyWithEncodedPwd;
@@ -130,5 +131,12 @@ class AccountServiceTest extends ServiceTest {
         when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.getAccount(LUFFY_ID));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
+    }
+
+    @Test
+    @DisplayName("getAccounts - invokes repository findAllByAttributes passing down the parameters")
+    void getAccounts_invokes_findAllByAttributes() {
+        testee.getAccounts(LUFFY_NAME, LUFFY_EMAIL, true, false);
+        verify(accountRepository).findAllByAttributes(LUFFY_NAME, LUFFY_EMAIL, true, false);
     }
 }

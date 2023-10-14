@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 @Service
@@ -52,6 +53,10 @@ public class AccountService implements UserDetailsService {
 
     public Account getAccount(Integer id) {
         return accountRepository.findById(id).orElseThrow(anEntityNotFoundException(id));
+    }
+
+    public List<Account> getAccounts(String name, String email, Boolean isAdmin, Boolean isActive) {
+        return accountRepository.findAllByAttributes(name, email, isAdmin, isActive);
     }
 
     private void validateEmailDoesNotExist(String email) {
