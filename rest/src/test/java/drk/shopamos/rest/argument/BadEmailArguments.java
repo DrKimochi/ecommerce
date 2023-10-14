@@ -1,7 +1,7 @@
 package drk.shopamos.rest.argument;
 
 import static drk.shopamos.rest.controller.AccountControllerTest.CREATE_URI;
-import static drk.shopamos.rest.controller.AccountControllerTest.UPDATE_URI;
+import static drk.shopamos.rest.controller.AccountControllerTest.DELETE_UPDATE_URI;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
@@ -23,10 +23,10 @@ public class BadEmailArguments implements ArgumentsProvider {
                 Arguments.of(POST, CREATE_URI, null, "john.doe@example@com"),
                 Arguments.of(POST, CREATE_URI, null, "jane_doe@.com"),
                 Arguments.of(POST, CREATE_URI, null, ".@domain.com"),
-                Arguments.of(PUT, UPDATE_URI, "123", "missingdomain.com"),
-                Arguments.of(PUT, UPDATE_URI, "123", "@example.com"),
-                Arguments.of(PUT, UPDATE_URI, "123", "john.doe@example@com"),
-                Arguments.of(PUT, UPDATE_URI, "123", "jane_doe@.com"),
-                Arguments.of(PUT, UPDATE_URI, "123", ".@domain.com"));
+                Arguments.of(PUT, DELETE_UPDATE_URI, "123", "missingdomain.com"),
+                Arguments.of(PUT, DELETE_UPDATE_URI, "123", "@example.com"),
+                Arguments.of(PUT, DELETE_UPDATE_URI, "123", "john.doe@example@com"),
+                Arguments.of(PUT, DELETE_UPDATE_URI, "123", "jane_doe@.com"),
+                Arguments.of(PUT, DELETE_UPDATE_URI, "123", ".@domain.com"));
     }
 }

@@ -101,6 +101,15 @@ class AccountRepositoryTest {
         assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
     }
 
+    @Test
+    @DisplayName("deleteById - when ID exists then row is deleted")
+    void deleteById_whenIdExists_thenDeleteRow() {
+        Integer accountId = testee.save(buildCustomerNamiWithoutId()).getId();
+        assertThat(testee.existsById(accountId), is(true));
+        testee.deleteById(accountId);
+        assertThat(testee.existsById(accountId), is(false));
+    }
+
     private void assertAccountNamiWithId(Account account) {
         assertThat(account.getId(), is(notNullValue()));
         assertThat(account.getEmail(), is(NAMI_EMAIL));

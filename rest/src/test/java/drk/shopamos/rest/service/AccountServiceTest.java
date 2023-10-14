@@ -97,4 +97,21 @@ class AccountServiceTest extends ServiceTest {
         testee.updateAccount(luffy);
         verify(accountRepository).save(buildAdminLuffyWithEncodedPwd());
     }
+
+    @Test
+    @DisplayName("deleteAccount - throws exception when ID does not exist")
+    void deleteAccount_throwsExceptionWhenIdDoesNotExist() {
+        when(accountRepository.existsById(LUFFY_ID)).thenReturn(false);
+        assertThrows(EntityNotFoundException.class, () -> testee.deleteAccount(LUFFY_ID));
+        verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
+        verify(accountRepository, times(0)).save(any());
+    }
+
+    @Test
+    @DisplayName("deleteAccount - deletes by ID when the ID exists")
+    void deleteAccount_deletesById_whenIdExists() {
+        when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
+        testee.deleteAccount(LUFFY_ID);
+        verify(accountRepository).deleteById(LUFFY_ID);
+    }
 }

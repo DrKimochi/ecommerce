@@ -46,6 +46,11 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
+    public void deleteAccount(Integer id) {
+        validateIdExists(id);
+        accountRepository.deleteById(id);
+    }
+
     private void validateEmailDoesNotExist(String email) {
         if (accountRepository.existsByEmail(email)) {
             throw new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
