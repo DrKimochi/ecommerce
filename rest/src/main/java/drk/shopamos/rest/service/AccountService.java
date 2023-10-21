@@ -24,51 +24,49 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class AccountService implements UserDetailsService {
 
-    private final AccountRepository accountRepository;
+    private final AccountRepository repository;
     private final MessageProvider msgProvider;
     private final PasswordEncoder passwordEncoder;
 
     public Account loadUserByUsername(String username) {
-        return accountRepository
-                .findByEmail(username)
-                .orElseThrow(aUsernameNotFoundException(username));
+        return repository.findByEmail(username).orElseThrow(aUsernameNotFoundException(username));
     }
 
     public Account createAccount(Account account) {
-        validateEmailDoesNotExist(account.getEmail());
+        String email = account.getEmail();
+        if (repository.findByEmail(email).isPresent()) {
+            throw anEntityExistsException(email).get();
+        }
         encodePassword(account);
-        return accountRepository.save(account);
+        return repository.save(account);
     }
 
     public Account updateAccount(Account account) {
-        validateIdExists(account.getId());
+        Integer id = account.getId();
+        if (repository.findById(id).isEmpty()) {
+            throw anEntityNotFoundException(id).get();
+        }
         encodePassword(account);
-        return accountRepository.save(account);
+        return repository.save(account);
     }
 
     public void deleteAccount(Integer id) {
-        validateIdExists(id);
-        accountRepository.deleteById(id);
+        if (repository.findById(id).isEmpty()) {
+            throw anEntityNotFoundException(id).get();
+        }
+        repository.deleteById(id);
     }
 
     public Account getAccount(Integer id) {
-        return accountRepository.findById(id).orElseThrow(anEntityNotFoundException(id));
+        return repository.findById(id).orElseThrow(anEntityNotFoundException(id));
     }
 
     public List<Account> getAccounts(String name, String email, Boolean isAdmin, Boolean isActive) {
-        return accountRepository.findAllByAttributes(name, email, isAdmin, isActive);
+        return repository.findAllByAttributes(name, email, isAdmin, isActive);
     }
 
-    private void validateEmailDoesNotExist(String email) {
-        if (accountRepository.existsByEmail(email)) {
-            throw new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
-        }
-    }
-
-    private void validateIdExists(Integer id) {
-        if (!accountRepository.existsById(id)) {
-            throw new EntityNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_ID, id));
-        }
+    private Supplier<EntityExistsException> anEntityExistsException(String email) {
+        return () -> new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
     }
 
     private Supplier<EntityNotFoundException> anEntityNotFoundException(Integer id) {

@@ -64,7 +64,7 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("createAccount - throws exception when account already exists")
     void createAccount_throwsExceptionWhenAccountAlreadyExists() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.existsByEmail(LUFFY_EMAIL)).thenReturn(true);
+        when(accountRepository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(new Account()));
         assertThrows(EntityExistsException.class, () -> testee.createAccount(luffy));
         verify(messageProvider).getMessage(MSG_EXISTS_EMAIL, LUFFY_EMAIL);
         verify(accountRepository, times(0)).save(any());
@@ -74,7 +74,7 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("createAccount - saves account when it doesnt exist yet")
     void createAccount_savesWhenAccountDoesntExistYet() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.existsByEmail(LUFFY_EMAIL)).thenReturn(false);
+        when(accountRepository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.empty());
         testee.createAccount(luffy);
         verify(accountRepository).save(luffy);
     }
@@ -83,7 +83,7 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("updateAccount -throws exception when ID does not exist")
     void updateAccount_throwsExceptionWhenIdDoesNotExist() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(false);
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.updateAccount(luffy));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
         verify(accountRepository, times(0)).save(any());
@@ -93,7 +93,7 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("updateAccount - save account with encoded password when validations pass")
     void updateAccount_savesWhenValidationsPass() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
         when(passwordEncoder.encode(luffy.getPassword())).thenReturn(LUFFY_ENCODED_PWD);
         testee.updateAccount(luffy);
         verify(accountRepository).save(buildAdminLuffyWithEncodedPwd());
@@ -102,7 +102,7 @@ class AccountServiceTest extends ServiceTest {
     @Test
     @DisplayName("deleteAccount - throws exception when ID does not exist")
     void deleteAccount_throwsExceptionWhenIdDoesNotExist() {
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(false);
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.deleteAccount(LUFFY_ID));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
         verify(accountRepository, times(0)).save(any());
@@ -111,7 +111,7 @@ class AccountServiceTest extends ServiceTest {
     @Test
     @DisplayName("deleteAccount - deletes by ID when the ID exists")
     void deleteAccount_deletesById_whenIdExists() {
-        when(accountRepository.existsById(LUFFY_ID)).thenReturn(true);
+        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
         testee.deleteAccount(LUFFY_ID);
         verify(accountRepository).deleteById(LUFFY_ID);
     }
