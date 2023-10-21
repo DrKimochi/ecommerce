@@ -17,10 +17,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
     void deleteById(Integer id);
 
-    boolean existsByEmail(String email);
-
-    boolean existsById(Integer id);
-
     @Query(
             "SELECT a FROM Account a "
                     + "where (:name is NULL or lower(a.name) like CONCAT('%',lower(:name),'%')) "

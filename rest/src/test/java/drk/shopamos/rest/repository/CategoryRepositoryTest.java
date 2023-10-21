@@ -1,6 +1,7 @@
 package drk.shopamos.rest.repository;
 
 import static drk.shopamos.rest.mother.CategoryMother.FRUIT_CAT_ID;
+import static drk.shopamos.rest.mother.CategoryMother.MISC_CAT_ID;
 import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,5 +57,13 @@ class CategoryRepositoryTest {
         fruitCategory.setName(null);
         assertThrows(
                 DataIntegrityViolationException.class, () -> testee.saveAndFlush(fruitCategory));
+    }
+
+    @Test
+    @DisplayName("deleteById - when ID exists then row is deleted")
+    void deleteById_whenIdExists_thenDeleteRow() {
+        assertThat(testee.existsById(MISC_CAT_ID), is(true));
+        testee.deleteById(MISC_CAT_ID);
+        assertThat(testee.existsById(MISC_CAT_ID), is(false));
     }
 }

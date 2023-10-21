@@ -231,7 +231,7 @@ public final class AccountControllerTest extends ControllerTest {
         AccountRequest requestBody = buildCustomerRequestNami();
         AccountResponse accountResponse =
                 getMvc().send(PUT, ACCOUNT_URI_WITH_ID, NAMI_ID)
-                        .withJwt(customerToken(LUFFY_ID))
+                        .withJwt(adminToken(LUFFY_ID))
                         .withBody(requestBody)
                         .thenExpectStatus(OK)
                         .getResponseBody(AccountResponse.class);

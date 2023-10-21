@@ -65,6 +65,10 @@ public class AccountService implements UserDetailsService {
         return repository.findAllByAttributes(name, email, isAdmin, isActive);
     }
 
+    private void encodePassword(Account account) {
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+    }
+
     private Supplier<EntityExistsException> anEntityExistsException(String email) {
         return () -> new EntityExistsException(msgProvider.getMessage(MSG_EXISTS_EMAIL, email));
     }
@@ -76,9 +80,5 @@ public class AccountService implements UserDetailsService {
     private Supplier<UsernameNotFoundException> aUsernameNotFoundException(String username) {
         return () ->
                 new UsernameNotFoundException(msgProvider.getMessage(MSG_NOT_FOUND_USER, username));
-    }
-
-    private void encodePassword(Account account) {
-        account.setPassword(passwordEncoder.encode(account.getPassword()));
     }
 }

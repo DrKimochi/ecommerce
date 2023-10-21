@@ -38,7 +38,7 @@ import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends ServiceTest {
-    @Mock AccountRepository accountRepository;
+    @Mock AccountRepository repository;
     @Mock MessageProvider messageProvider;
     @Mock PasswordEncoder passwordEncoder;
     @InjectMocks AccountService testee;
@@ -47,7 +47,7 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("loadUserByUsername - finds the account by email from account repository")
     void loadUserByUsername_findsUserByEmail() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(luffy));
+        when(repository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(luffy));
         Account foundAccount = testee.loadUserByUsername(LUFFY_EMAIL);
         assertThat(luffy, is(foundAccount));
     }
@@ -55,7 +55,7 @@ class AccountServiceTest extends ServiceTest {
     @Test
     @DisplayName("loadUserByUsername - throws exception when it cannot find the account by email")
     void loadUserByUsername_throwsExceptionWhenNotFound() {
-        when(accountRepository.findByEmail(VIVI_EMAIL)).thenReturn(Optional.empty());
+        when(repository.findByEmail(VIVI_EMAIL)).thenReturn(Optional.empty());
         assertThrows(UsernameNotFoundException.class, () -> testee.loadUserByUsername(VIVI_EMAIL));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_USER, VIVI_EMAIL);
     }
@@ -64,63 +64,63 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("createAccount - throws exception when account already exists")
     void createAccount_throwsExceptionWhenAccountAlreadyExists() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(new Account()));
+        when(repository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(new Account()));
         assertThrows(EntityExistsException.class, () -> testee.createAccount(luffy));
         verify(messageProvider).getMessage(MSG_EXISTS_EMAIL, LUFFY_EMAIL);
-        verify(accountRepository, times(0)).save(any());
+        verify(repository, times(0)).save(any());
     }
 
     @Test
     @DisplayName("createAccount - saves account when it doesnt exist yet")
     void createAccount_savesWhenAccountDoesntExistYet() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.empty());
+        when(repository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.empty());
         testee.createAccount(luffy);
-        verify(accountRepository).save(luffy);
+        verify(repository).save(luffy);
     }
 
     @Test
     @DisplayName("updateAccount -throws exception when ID does not exist")
     void updateAccount_throwsExceptionWhenIdDoesNotExist() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.updateAccount(luffy));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
-        verify(accountRepository, times(0)).save(any());
+        verify(repository, times(0)).save(any());
     }
 
     @Test
     @DisplayName("updateAccount - save account with encoded password when validations pass")
     void updateAccount_savesWhenValidationsPass() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
         when(passwordEncoder.encode(luffy.getPassword())).thenReturn(LUFFY_ENCODED_PWD);
         testee.updateAccount(luffy);
-        verify(accountRepository).save(buildAdminLuffyWithEncodedPwd());
+        verify(repository).save(buildAdminLuffyWithEncodedPwd());
     }
 
     @Test
     @DisplayName("deleteAccount - throws exception when ID does not exist")
     void deleteAccount_throwsExceptionWhenIdDoesNotExist() {
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.deleteAccount(LUFFY_ID));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
-        verify(accountRepository, times(0)).save(any());
+        verify(repository, times(0)).save(any());
     }
 
     @Test
     @DisplayName("deleteAccount - deletes by ID when the ID exists")
     void deleteAccount_deletesById_whenIdExists() {
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
         testee.deleteAccount(LUFFY_ID);
-        verify(accountRepository).deleteById(LUFFY_ID);
+        verify(repository).deleteById(LUFFY_ID);
     }
 
     @Test
     @DisplayName("getAccount - returns account when it is found")
     void getAccount_returnsAccount_whenItIsFound() {
         Account luffy = buildAdminLuffy();
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.of(luffy));
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.of(luffy));
         Account returnedAccount = testee.getAccount(LUFFY_ID);
         assertThat(luffy, is(returnedAccount));
     }
@@ -128,7 +128,7 @@ class AccountServiceTest extends ServiceTest {
     @Test
     @DisplayName("getAccount - throws exception when it is not found")
     void getAccount_throwsException_whenNotFound() {
-        when(accountRepository.findById(LUFFY_ID)).thenReturn(Optional.empty());
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> testee.getAccount(LUFFY_ID));
         verify(messageProvider).getMessage(MSG_NOT_FOUND_ID, LUFFY_ID);
     }
@@ -137,6 +137,6 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("getAccounts - invokes repository findAllByAttributes passing down the parameters")
     void getAccounts_invokes_findAllByAttributes() {
         testee.getAccounts(LUFFY_NAME, LUFFY_EMAIL, true, false);
-        verify(accountRepository).findAllByAttributes(LUFFY_NAME, LUFFY_EMAIL, true, false);
+        verify(repository).findAllByAttributes(LUFFY_NAME, LUFFY_EMAIL, true, false);
     }
 }

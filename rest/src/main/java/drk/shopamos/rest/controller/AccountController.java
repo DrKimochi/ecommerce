@@ -31,53 +31,53 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/v1/accounts")
 public class AccountController {
-    private final AccountService accountService;
-    private final AccountMapper accountMapper;
+    private final AccountService service;
+    private final AccountMapper mapper;
 
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(
             @Valid @RequestBody AccountRequest accountRequest) {
-        Account account = accountService.createAccount(accountMapper.map(accountRequest));
-        return ResponseEntity.ok(accountMapper.map(account));
+        Account account = service.createAccount(mapper.map(accountRequest));
+        return ResponseEntity.ok(mapper.map(account));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AccountResponse> updateAccount(
             @PathVariable(name = "id") Integer id,
             @Valid @RequestBody AccountRequest accountRequest) {
-        Account account = accountMapper.map(accountRequest, id);
+        Account account = mapper.map(accountRequest, id);
 
         new PrincipalDataViolationChain<>(account)
                 .add(new CustomerSelfPromoteViolation())
                 .add(new CustomerTargetingAnotherViolation())
                 .verify();
 
-        account = accountService.updateAccount(account);
-        return ResponseEntity.ok(accountMapper.map(account));
+        account = service.updateAccount(account);
+        return ResponseEntity.ok(mapper.map(account));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable(name = "id") Integer id) {
-        Account account = accountMapper.map(null, id);
+        Account account = mapper.map(null, id);
 
         new PrincipalDataViolationChain<>(account)
                 .add(new CustomerTargetingAnotherViolation())
                 .verify();
 
-        accountService.deleteAccount(id);
+        service.deleteAccount(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> getAccount(@PathVariable(name = "id") Integer id) {
-        Account account = accountMapper.map(null, id);
+        Account account = mapper.map(null, id);
 
         new PrincipalDataViolationChain<>(account)
                 .add(new CustomerTargetingAnotherViolation())
                 .verify();
 
-        account = accountService.getAccount(id);
-        return ResponseEntity.ok(accountMapper.map(account));
+        account = service.getAccount(id);
+        return ResponseEntity.ok(mapper.map(account));
     }
 
     @GetMapping
@@ -88,8 +88,8 @@ public class AccountController {
             @RequestParam(name = "isAdmin", required = false) Boolean isAdmin,
             @RequestParam(name = "isActive", required = false) Boolean isActive) {
 
-        List<Account> foundAccounts = accountService.getAccounts(name, email, isAdmin, isActive);
-        List<AccountResponse> response = foundAccounts.stream().map(accountMapper::map).toList();
+        List<Account> foundAccounts = service.getAccounts(name, email, isAdmin, isActive);
+        List<AccountResponse> response = foundAccounts.stream().map(mapper::map).toList();
         return ResponseEntity.ok(response);
     }
 }

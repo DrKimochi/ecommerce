@@ -5,4 +5,4 @@ insert into "account" ("email", "is_active", "is_admin", "name", "password")
 values ('zoro@mugiwara.com', false, false, 'roronoa zoro', 'meat123');
 
 insert into "category" ("id", "name", "description", "icon_url")
-values ('MISC', 'Miscellaneous', 'Products that dont fit in any other category', 'hhtp://localImageRepo/misc.ico');
+values ('MISC', 'Miscellaneous', 'Products that dont fit in any other category', 'http://localImageRepo/misc.ico');

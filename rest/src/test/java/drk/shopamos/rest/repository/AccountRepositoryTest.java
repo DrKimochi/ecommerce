@@ -49,18 +49,6 @@ class AccountRepositoryTest {
     }
 
     @Test
-    @DisplayName("existsByEmail - returns true when email exists")
-    void existsByEmail_whenEmailExists_returnsTrue() {
-        assertThat(testee.existsByEmail(LUFFY_EMAIL), is(true));
-    }
-
-    @Test
-    @DisplayName("existsByEmail - returns false when email does not exist")
-    void existsByEmail_whenEmailDoesNotExist_returnsFalse() {
-        assertThat(testee.existsByEmail(VIVI_EMAIL), is(false));
-    }
-
-    @Test
     @DisplayName("existsById - returns true when id exists")
     void existsById_whenIdExists_returnsTrue() {
         assertThat(testee.existsById(1), is(true));
