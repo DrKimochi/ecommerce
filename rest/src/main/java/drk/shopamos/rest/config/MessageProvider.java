@@ -15,6 +15,7 @@ public class MessageProvider {
     public static final String MSG_NOT_FOUND_ID = "error.service.entity.notfound.id";
     public static final String MSG_NOT_FOUND_USER = "error.service.entity.notfound.username";
     public static final String MSG_EXISTS_EMAIL = "error.service.entity.exists.email";
+    public static final String MSG_EXISTS_CATEGORY = "error.service.entity.exists.category";
     public static final String MSG_FORM_FIELD = "error.form.field";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";

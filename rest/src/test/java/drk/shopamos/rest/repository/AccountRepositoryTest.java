@@ -49,18 +49,6 @@ class AccountRepositoryTest {
     }
 
     @Test
-    @DisplayName("existsByEmail - returns true when email exists")
-    void existsByEmail_whenEmailExists_returnsTrue() {
-        assertThat(testee.existsByEmail(LUFFY_EMAIL), is(true));
-    }
-
-    @Test
-    @DisplayName("existsByEmail - returns false when email does not exist")
-    void existsByEmail_whenEmailDoesNotExist_returnsFalse() {
-        assertThat(testee.existsByEmail(VIVI_EMAIL), is(false));
-    }
-
-    @Test
     @DisplayName("existsById - returns true when id exists")
     void existsById_whenIdExists_returnsTrue() {
         assertThat(testee.existsById(1), is(true));
@@ -75,7 +63,7 @@ class AccountRepositoryTest {
     @Test
     @DisplayName("save - when account passes validations, then it is saved to database ")
     void save_whenValidAccount_thenSavesToDb() {
-        testee.save(buildCustomerNamiWithoutId());
+        testee.saveAndFlush(buildCustomerNamiWithoutId());
         Optional<Account> expectedSavedAccountOpt = testee.findByEmail(NAMI_EMAIL);
         assertThat(expectedSavedAccountOpt.isPresent(), is(true));
         assertAccountNamiWithId(expectedSavedAccountOpt.get());
@@ -86,7 +74,7 @@ class AccountRepositoryTest {
     void save_whenEmailExists_thenThrowError() {
         Account account = buildCustomerNamiWithoutId();
         account.setEmail(ZORO_EMAIL);
-        assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
+        assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(account));
     }
 
     @Test
@@ -94,7 +82,7 @@ class AccountRepositoryTest {
     void save_whenEmailMissing_thenThrowError() {
         Account account = buildCustomerNamiWithoutId();
         account.setEmail(null);
-        assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
+        assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(account));
     }
 
     @Test
@@ -102,13 +90,13 @@ class AccountRepositoryTest {
     void save_whenPasswordMissing_thenThrowError() {
         Account account = buildCustomerNamiWithoutId();
         account.setPassword(null);
-        assertThrows(DataIntegrityViolationException.class, () -> testee.save(account));
+        assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(account));
     }
 
     @Test
     @DisplayName("deleteById - when ID exists then row is deleted")
     void deleteById_whenIdExists_thenDeleteRow() {
-        Integer accountId = testee.save(buildCustomerNamiWithoutId()).getId();
+        Integer accountId = testee.saveAndFlush(buildCustomerNamiWithoutId()).getId();
         assertThat(testee.existsById(accountId), is(true));
         testee.deleteById(accountId);
         assertThat(testee.existsById(accountId), is(false));

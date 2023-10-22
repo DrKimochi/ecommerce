@@ -3,6 +3,7 @@ package drk.shopamos.rest.controller.assertion;
 import static drk.shopamos.rest.mother.MessageMother.MSG_BODY_UNREADABLE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_PROMOTE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_TARGET_OTHERS;
+import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_CATEGORY;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMAIL;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMPTY;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_MAX_LENGTH;
@@ -34,8 +35,13 @@ public class ErrorResponseAssert {
     }
 
     public void passwordField(ErrorResponse errorResponse) {
-        String message = messageProvider.getMessage(MSG_FIELD_PASSWORD, "password");
+        String message = messageProvider.getMessage(MSG_FIELD_PASSWORD);
         assertFormFieldError(errorResponse, "password", message);
+    }
+
+    public void categoryField(ErrorResponse errorResponse) {
+        String message = messageProvider.getMessage(MSG_FIELD_CATEGORY);
+        assertFormFieldError(errorResponse, "id", message);
     }
 
     public void emptyField(ErrorResponse errorResponse, String fieldName) {
