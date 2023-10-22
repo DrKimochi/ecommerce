@@ -11,6 +11,8 @@ import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategoryRequest;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -34,6 +36,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
 
 @WebMvcTest
 @ContextConfiguration(classes = {CategoryController.class, CategoryMapperImpl.class})
@@ -144,6 +148,85 @@ public class CategoryControllerTest extends ControllerTest {
                         .getResponseBody(CategoryResponse.class);
 
         assertFruitCategoryResponse(categoryResponse);
+    }
+
+    @Test
+    @DisplayName("deleteCategory - when user is admin then call service layer and return 200 ")
+    void deleteCategory_whenUserIsAdmin_return200() throws Exception {
+        getMvc().send(DELETE, CATEGORY_URI_WITH_ID, FRUIT_CAT_ID)
+                .withJwt(adminToken(LUFFY_ID))
+                .thenExpectStatus(OK);
+    }
+
+    @Test
+    @DisplayName("deleteCategory - when user is customer then return 403")
+    void deleteCategory_whenUserIsCustomer_return403() throws Exception {
+        getMvc().send(DELETE, CATEGORY_URI_WITH_ID, FRUIT_CAT_ID)
+                .withJwt(customerToken(LUFFY_ID))
+                .thenExpectStatus(FORBIDDEN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName(
+            "getCategory -  when user is authenticated then call service layer and return 200 response")
+    void getCategory_whenUserAuthenticated_thenReturn200(boolean isAdmin) throws Exception {
+        Category fruitCategory = buildFruitCategory();
+        when(categoryService.getCategory(FRUIT_CAT_ID)).thenReturn(fruitCategory);
+        CategoryResponse categoryResponse =
+                getMvc().send(GET, CATEGORY_URI_WITH_ID, FRUIT_CAT_ID)
+                        .withJwt(token(LUFFY_ID, isAdmin))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(CategoryResponse.class);
+
+        assertFruitCategoryResponse(categoryResponse);
+    }
+
+    @Test
+    @DisplayName("getCategory - when user not authenticated then return 403")
+    void getCategory_whenUserNotAuthenticated_thenReturn403() throws Exception {
+        getMvc().send(GET, CATEGORY_URI_WITH_ID, FRUIT_CAT_ID).thenExpectStatus(FORBIDDEN);
+    }
+
+    @Test
+    @DisplayName("getCategories - when user not authenticated then return 403")
+    void getCategories_whenUserNotAuthenticated_thenReturn403() throws Exception {
+        getMvc().send(GET, CATEGORY_URI).thenExpectStatus(FORBIDDEN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName(
+            "getCategories - when user is authenticated then call service layer and return 200 response")
+    void getCategories_whenUserAuthenticated_thenReturn200(boolean isAdmin) throws Exception {
+        List<Category> categories = List.of(buildFruitCategory());
+        when(categoryService.getCategories(FRUIT_CAT_NAME, FRUIT_CAT_DESC)).thenReturn(categories);
+        CategoryResponse[] categoryResponse =
+                getMvc().send(GET, CATEGORY_URI)
+                        .withQueryParam("name", FRUIT_CAT_NAME)
+                        .withQueryParam("description", FRUIT_CAT_DESC)
+                        .withJwt(token(LUFFY_ID, isAdmin))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(CategoryResponse[].class);
+
+        assertThat(categoryResponse.length, is(1));
+        assertFruitCategoryResponse(categoryResponse[0]);
+    }
+
+    @Test
+    @DisplayName(
+            "getCategories - when query params are all null then call service layer and return 200 response")
+    void getCategories_whenAttributesAreNull_thenReturn200() throws Exception {
+        List<Category> categories = List.of(buildFruitCategory());
+        when(categoryService.getCategories(null, null)).thenReturn(categories);
+        CategoryResponse[] categoryResponse =
+                getMvc().send(GET, CATEGORY_URI)
+                        .withJwt(adminToken(LUFFY_ID))
+                        .thenExpectStatus(OK)
+                        .getResponseBody(CategoryResponse[].class);
+
+        assertThat(categoryResponse.length, is(1));
+        assertFruitCategoryResponse(categoryResponse[0]);
     }
 
     private void assertFruitCategoryResponse(CategoryResponse category) {

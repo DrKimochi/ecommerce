@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 @Service
@@ -42,6 +43,14 @@ public class CategoryService {
             throw anEntityNotFoundException(id).get();
         }
         repository.deleteById(id);
+    }
+
+    public Category getCategory(String id) {
+        return repository.findById(id).orElseThrow(anEntityNotFoundException(id));
+    }
+
+    public List<Category> getCategories(String name, String description) {
+        return repository.findAllByAttributes(name, description);
     }
 
     private Supplier<EntityExistsException> anEntityExistsException(String categoryId) {

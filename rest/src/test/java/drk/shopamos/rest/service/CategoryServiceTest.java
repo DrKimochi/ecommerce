@@ -1,10 +1,16 @@
 package drk.shopamos.rest.service;
 
+import static drk.shopamos.rest.mother.CategoryMother.FRUIT_CAT_DESC;
+import static drk.shopamos.rest.mother.CategoryMother.FRUIT_CAT_ID;
+import static drk.shopamos.rest.mother.CategoryMother.FRUIT_CAT_NAME;
 import static drk.shopamos.rest.mother.CategoryMother.MISC_CAT_ID;
+import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategory;
 import static drk.shopamos.rest.mother.CategoryMother.buildMiscCategory;
 import static drk.shopamos.rest.mother.MessageMother.MSG_EXISTS_CATEGORY;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -86,5 +92,30 @@ class CategoryServiceTest {
         when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.of(new Category()));
         testee.deleteCategory(MISC_CAT_ID);
         verify(repository).deleteById(MISC_CAT_ID);
+    }
+
+    @Test
+    @DisplayName("getCategory - throws exception when category not found")
+    void getCategory_throwsExceptionWhenNotFound() {
+        when(repository.findById(FRUIT_CAT_ID)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> testee.getCategory(FRUIT_CAT_ID));
+        verify(messageProvider).getMessage(MessageProvider.MSG_NOT_FOUND_ID, FRUIT_CAT_ID);
+    }
+
+    @Test
+    @DisplayName("getCategory - returns category when it is found")
+    void getCategory_returnsCategory() {
+        Category fruitCategory = buildFruitCategory();
+        when(repository.findById(FRUIT_CAT_ID)).thenReturn(Optional.of(fruitCategory));
+        Category foundCategory = testee.getCategory(FRUIT_CAT_ID);
+        assertThat(foundCategory, is(fruitCategory));
+    }
+
+    @Test
+    @DisplayName(
+            ("getCategories - invokes repository findAllByAttributes passing down the parameters"))
+    void getCategories_invokes_findAllByAttributes() {
+        testee.getCategories(FRUIT_CAT_NAME, FRUIT_CAT_DESC);
+        verify(repository).findAllByAttributes(FRUIT_CAT_NAME, FRUIT_CAT_DESC);
     }
 }

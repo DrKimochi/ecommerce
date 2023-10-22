@@ -8,15 +8,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.*;
 
+import drk.shopamos.rest.argument.CategoryFindAllByAttributesArguments;
 import drk.shopamos.rest.model.entity.Category;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.jpa.JpaSystemException;
 
+import java.util.List;
 import java.util.Optional;
 
 @DataJpaTest
@@ -65,5 +69,21 @@ class CategoryRepositoryTest {
         assertThat(testee.existsById(MISC_CAT_ID), is(true));
         testee.deleteById(MISC_CAT_ID);
         assertThat(testee.existsById(MISC_CAT_ID), is(false));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(CategoryFindAllByAttributesArguments.class)
+    @DisplayName("findAllByAttributes - finds by name contains and case insensitive")
+    void findAllByAttributes_findsByAttributes(String name, String description) {
+        List<Category> foundCategories = testee.findAllByAttributes(name, description);
+        assertThat(foundCategories.size(), is(1));
+        assertThat(foundCategories.get(0).getId(), is(MISC_CAT_ID));
+    }
+
+    @Test
+    @DisplayName("findAllByAttributes - returns all categories when attributes all null")
+    void findAllByAttributes_returnsAllCategories() {
+        List<Category> foundCategories = testee.findAllByAttributes(null, null);
+        assertThat(foundCategories.size(), is(2));
     }
 }
