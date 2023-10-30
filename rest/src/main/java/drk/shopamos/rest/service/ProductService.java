@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.function.Supplier;
 
 @Service
@@ -39,6 +41,29 @@ public class ProductService {
             throw anEntityNotFoundException(id).get();
         }
         productRepository.deleteById(id);
+    }
+
+    public Product getProduct(Integer id) {
+        return productRepository.findById(id).orElseThrow(anEntityNotFoundException(id));
+    }
+
+    public Product getActiveProduct(Integer id) {
+        Product product = getProduct(id);
+        if (!product.isActive()) {
+            throw anEntityNotFoundException(id).get();
+        }
+        return product;
+    }
+
+    public List<Product> getProducts(
+            String categoryId,
+            String name,
+            String description,
+            BigDecimal priceFrom,
+            BigDecimal priceTo,
+            Boolean isActive) {
+        return productRepository.findAllByAttributes(
+                categoryId, name, description, priceFrom, priceTo, isActive);
     }
 
     private Product saveProduct(String categoryId, Product product) {

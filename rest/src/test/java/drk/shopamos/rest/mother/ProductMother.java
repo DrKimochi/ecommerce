@@ -22,6 +22,7 @@ public class ProductMother {
         product.setDescription(TSUNNY_PROD_DESC);
         product.setPrice(TSUNNY_PROD_PRICE);
         product.setImageUrl(TSUNNY_PROD_IMAGEURL);
+        product.setActive(true);
         product.setCategory(buildShipCategory());
         return product;
     }

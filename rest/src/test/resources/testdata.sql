@@ -11,4 +11,7 @@ insert into "category" ("id", "name", "description", "icon_url")
 values ('SHIP', 'Ships', 'Ships of all sizes for venturing into the sea ', 'http://localImageRepo/ship.ico');
 
 insert into "product" ("name", "description", "price", "image_url", "is_active", "category_id")
-values('The Going Merry', 'A worthy ship for anyone willing to become the next pirate king', 9998.99, 'http://localImageRepo/gomu.jpg', true, 'SHIP')
+values('The Going Merry', 'A worthy ship for anyone willing to become the next pirate king', 9998.99, 'http://localImageRepo/merry.jpg', true, 'SHIP');
+
+insert into "product" ("name", "description", "price", "image_url", "is_active", "category_id")
+values('Treasure chest', 'Contains the One Piece. The pirate king''s treasure of unimaginable value', 10000.01, 'http://localImageRepo/onepiece.jpg', false, 'MISC')

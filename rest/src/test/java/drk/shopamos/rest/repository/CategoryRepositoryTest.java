@@ -73,7 +73,7 @@ class CategoryRepositoryTest {
 
     @ParameterizedTest
     @ArgumentsSource(CategoryFindAllByAttributesArguments.class)
-    @DisplayName("findAllByAttributes - finds by name contains and case insensitive")
+    @DisplayName("findAllByAttributes - finds by name/description contains and case insensitive")
     void findAllByAttributes_findsByAttributes(String name, String description) {
         List<Category> foundCategories = testee.findAllByAttributes(name, description);
         assertThat(foundCategories.size(), is(1));

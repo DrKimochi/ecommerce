@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
 
+import drk.shopamos.rest.argument.ProductFindAllByAttributesArguments;
 import drk.shopamos.rest.model.entity.Product;
 
 import jakarta.persistence.EntityManager;
@@ -16,11 +17,15 @@ import jakarta.persistence.PersistenceUnitUtil;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @DataJpaTest
 class ProductRepositoryTest {
@@ -96,5 +101,31 @@ class ProductRepositoryTest {
         assertThat(persistenceUnitUtil.isLoaded(product.getCategory()), is(false));
         assertThat(product.getCategory().getName(), is(SHIP_CAT_NAME));
         assertThat(persistenceUnitUtil.isLoaded(product.getCategory()), is(true));
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(ProductFindAllByAttributesArguments.class)
+    @DisplayName(
+            "findAllByAttributes - finds by categoryId, name/description contains case insensitive, price between and isActive")
+    void findAllByAttributes_findsByMultipleAttributes(
+            String categoryId,
+            String name,
+            String description,
+            BigDecimal priceFrom,
+            BigDecimal priceTo,
+            Boolean isActive) {
+        List<Product> products =
+                testee.findAllByAttributes(
+                        categoryId, name, description, priceFrom, priceTo, isActive);
+        assertThat(products.size(), is(1));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ShIp", "SSHIPP"})
+    @DisplayName("findAllByAttributes - does not find if category Id does not exactly match")
+    void findAllByAttributes_findByCategoryId_matchesExactly(String categoryId) {
+        List<Product> products =
+                testee.findAllByAttributes(categoryId, null, null, null, null, null);
+        assertThat(products.size(), is(0));
     }
 }
