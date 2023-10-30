@@ -17,4 +17,6 @@ public class MessageMother {
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
     public static final String MSG_CANNOT_TARGET_OTHERS =
             "error.forbidden.entity.cannot.target.others";
+
+    public static final String RETURNED_MSG = "Message returned from exception";
 }
