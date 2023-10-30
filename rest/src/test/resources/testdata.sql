@@ -10,6 +10,9 @@ values ('MISC', 'Miscellaneous', 'Products that dont fit in any other category',
 insert into "category" ("id", "name", "description", "icon_url")
 values ('SHIP', 'Ships', 'Ships of all sizes for venturing into the sea ', 'http://localImageRepo/ship.ico');
 
+insert into "category" ("id", "name", "description", "icon_url")
+values ('SWRD', 'Swords', 'Swords of different grades for an edge in battle', 'http://localImageRepo/sword.ico');
+
 insert into "product" ("name", "description", "price", "image_url", "is_active", "category_id")
 values('The Going Merry', 'A worthy ship for anyone willing to become the next pirate king', 9998.99, 'http://localImageRepo/merry.jpg', true, 'SHIP');
 

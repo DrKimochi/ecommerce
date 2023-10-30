@@ -8,6 +8,7 @@ public class CategoryMother {
     public static final String MISC_CAT_ID = "MISC";
 
     public static final String SHIP_CAT_ID = "SHIP";
+    public static final String SWORD_CAT_ID = "SWRD";
     public static final String FRUIT_CAT_NAME = "Devil Fruits";
     public static final String MISC_CAT_NAME = "Miscellaneous";
 
