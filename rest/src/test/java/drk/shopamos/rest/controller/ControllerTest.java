@@ -18,6 +18,8 @@ import drk.shopamos.rest.service.AccountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -69,6 +71,7 @@ public abstract class ControllerTest {
         account.setId(accountId);
         account.setEmail(LUFFY_EMAIL);
         account.setAdmin(isAdmin);
+        SecurityContextHolder.clearContext();
         when(accountService.loadUserByUsername(LUFFY_EMAIL)).thenReturn(account);
         return jwtTokenHelper.generateToken(account);
     }
