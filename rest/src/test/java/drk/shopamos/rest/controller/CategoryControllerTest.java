@@ -10,6 +10,7 @@ import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategoryRequest;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
@@ -156,6 +157,8 @@ public class CategoryControllerTest extends ControllerTest {
         getMvc().send(DELETE, CATEGORY_URI_WITH_ID, FRUIT_CAT_ID)
                 .withJwt(adminToken(LUFFY_ID))
                 .thenExpectStatus(OK);
+
+        verify(categoryService).deleteCategory(FRUIT_CAT_ID);
     }
 
     @Test

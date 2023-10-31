@@ -1,7 +1,9 @@
 package drk.shopamos.rest.mother;
 
+import static drk.shopamos.rest.mother.CategoryMother.SHIP_CAT_ID;
 import static drk.shopamos.rest.mother.CategoryMother.buildShipCategory;
 
+import drk.shopamos.rest.controller.request.ProductRequest;
 import drk.shopamos.rest.model.entity.Product;
 
 import java.math.BigDecimal;
@@ -25,5 +27,16 @@ public class ProductMother {
         product.setActive(true);
         product.setCategory(buildShipCategory());
         return product;
+    }
+
+    public static ProductRequest buildThousandSunnyRequest() {
+        return ProductRequest.builder()
+                .categoryId(SHIP_CAT_ID)
+                .name(TSUNNY_PROD_NAME)
+                .description(TSUNNY_PROD_DESC)
+                .price(TSUNNY_PROD_PRICE)
+                .imageUrl(TSUNNY_PROD_IMAGEURL)
+                .isActive(true)
+                .build();
     }
 }

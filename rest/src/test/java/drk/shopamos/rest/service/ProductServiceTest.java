@@ -67,8 +67,8 @@ class ProductServiceTest {
     }
 
     @Test
-    @DisplayName("editProduct - throws entity not found when product ID does not exist")
-    void editProduct_whenProductIdNotFound_throwsException() {
+    @DisplayName("updateProduct - throws entity not found when product ID does not exist")
+    void updateProduct_whenProductIdNotFound_throwsException() {
         Product product = buildThousandSunny();
 
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.empty());
@@ -76,14 +76,14 @@ class ProductServiceTest {
         String exceptionMsg =
                 assertThrows(
                                 EntityNotFoundException.class,
-                                () -> testee.editProduct(SHIP_CAT_ID, product))
+                                () -> testee.updateProduct(SHIP_CAT_ID, product))
                         .getMessage();
         assertThat(RETURNED_MSG, is(exceptionMsg));
     }
 
     @Test
-    @DisplayName("editProduct - throws entity not found when category does not exist")
-    void editProduct_whenCategoryNotFound_throwsException() {
+    @DisplayName("updateProduct - throws entity not found when category does not exist")
+    void updateProduct_whenCategoryNotFound_throwsException() {
         Product product = buildThousandSunny();
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.of(product));
         when(messageProvider.getMessage(MSG_NOT_FOUND_CATEGORY, SHIP_CAT_ID))
@@ -91,14 +91,14 @@ class ProductServiceTest {
         String exceptionMsg =
                 assertThrows(
                                 EntityNotFoundException.class,
-                                () -> testee.editProduct(SHIP_CAT_ID, product))
+                                () -> testee.updateProduct(SHIP_CAT_ID, product))
                         .getMessage();
         assertThat(RETURNED_MSG, is(exceptionMsg));
     }
 
     @Test
-    @DisplayName("editProduct - saves when product ID and category ID exists")
-    void editProduct_saves() {
+    @DisplayName("updateProduct - saves when product ID and category ID exists")
+    void updateProduct_saves() {
         Category category = buildShipCategory();
         Product product = buildThousandSunny();
         product.setCategory(null);
@@ -106,7 +106,7 @@ class ProductServiceTest {
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.of(product));
         when(categoryRepository.getReferenceById(SHIP_CAT_ID)).thenReturn(category);
         when(categoryRepository.existsById(SHIP_CAT_ID)).thenReturn(true);
-        testee.editProduct(SHIP_CAT_ID, product);
+        testee.updateProduct(SHIP_CAT_ID, product);
         assertThat(product.getCategory(), is(category));
         verify(productRepository).save(product);
     }

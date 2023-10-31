@@ -28,7 +28,7 @@ public class ProductService {
         return saveProduct(categoryId, product);
     }
 
-    public Product editProduct(String newCategoryId, Product product) {
+    public Product updateProduct(String newCategoryId, Product product) {
         Integer id = product.getId();
         if (productRepository.findById(id).isEmpty()) {
             throw anEntityNotFoundException(id).get();
