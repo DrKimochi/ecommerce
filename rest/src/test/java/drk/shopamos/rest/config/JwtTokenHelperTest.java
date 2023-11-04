@@ -66,7 +66,7 @@ class JwtTokenHelperTest {
     @Test
     @DisplayName(
             "generateToken - When generateToken with null userDetails is called then IllegalArgumentException is thrown")
-    void generateToken_withNullUserDetails() {
+    void generateToken_withNullUserDetails_thenThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> testee.generateToken(null));
     }
 

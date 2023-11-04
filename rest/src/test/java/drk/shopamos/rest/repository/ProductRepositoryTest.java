@@ -1,6 +1,6 @@
 package drk.shopamos.rest.repository;
 
-import static drk.shopamos.rest.mother.CategoryMother.SHIP_CAT_NAME;
+import static drk.shopamos.rest.mother.CategoryMother.SWORD_CAT_NAME;
 import static drk.shopamos.rest.mother.ProductMother.buildThousandSunny;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -99,7 +99,7 @@ class ProductRepositoryTest {
                 entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
         Product product = testee.findById(1).orElseThrow();
         assertThat(persistenceUnitUtil.isLoaded(product.getCategory()), is(false));
-        assertThat(product.getCategory().getName(), is(SHIP_CAT_NAME));
+        assertThat(product.getCategory().getName(), is(SWORD_CAT_NAME));
         assertThat(persistenceUnitUtil.isLoaded(product.getCategory()), is(true));
     }
 
