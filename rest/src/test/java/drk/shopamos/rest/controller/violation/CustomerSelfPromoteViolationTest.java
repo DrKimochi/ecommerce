@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class CustomerSelfPromoteViolationTest {
 
-    CustomerSelfPromoteViolation customerSelfPromoteViolation = new CustomerSelfPromoteViolation();
+    CustomerSelfPromoteViolation testee = new CustomerSelfPromoteViolation();
     Account principal;
     Account target;
 
@@ -34,34 +34,34 @@ class CustomerSelfPromoteViolationTest {
     @DisplayName("isViolating - When principal has admin role then its not violating")
     void isViolating_whenPrincipalIsAdmin_thenFalse() {
         principal.setAdmin(true);
-        assertFalse(customerSelfPromoteViolation.isViolating(principal, target));
+        assertFalse(testee.isViolating(principal, target));
     }
 
     @Test
     @DisplayName("isViolating - When target has customer role then its not violating")
     void isViolating_whenTargetIsCustomer_thenFalse() {
         target.setAdmin(false);
-        assertFalse(customerSelfPromoteViolation.isViolating(principal, target));
+        assertFalse(testee.isViolating(principal, target));
     }
 
     @Test
     @DisplayName("isViolating - When principal is not the target account then its not violating")
     void isViolating_whenPrincipalDifferentFromTarget_thenFalse() {
         target.setId(LUFFY_ID);
-        assertFalse(customerSelfPromoteViolation.isViolating(principal, target));
+        assertFalse(testee.isViolating(principal, target));
     }
 
     @Test
     @DisplayName(
             "isViolating - When principal is customer and is targeting himself to be promoted then its violating")
     void isViolating_whenCustomerPromotingHimself_thenTrue() {
-        assertTrue(customerSelfPromoteViolation.isViolating(principal, target));
+        assertTrue(testee.isViolating(principal, target));
     }
 
     @Test
     @DisplayName("getErrorMessageCode - returns correct message code")
     void getErrorMessageCode_returnsCorrectMessageCode() {
-        String messageCode = customerSelfPromoteViolation.getErrorMessageCode();
+        String messageCode = testee.getErrorMessageCode();
         assertThat(messageCode, is(MSG_CANNOT_PROMOTE));
     }
 }

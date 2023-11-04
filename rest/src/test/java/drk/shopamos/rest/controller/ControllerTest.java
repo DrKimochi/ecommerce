@@ -16,8 +16,10 @@ import drk.shopamos.rest.controller.assertion.ErrorResponseAssert;
 import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.service.AccountService;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,7 +50,12 @@ public abstract class ControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    public MockMvcHandler getMvc() {
+    @BeforeEach
+    protected void setup() {
+        SecurityContextHolder.clearContext();
+    }
+
+    protected MockMvcHandler getMvc() {
         return new MockMvcHandler(mockMvc, objectMapper);
     }
 

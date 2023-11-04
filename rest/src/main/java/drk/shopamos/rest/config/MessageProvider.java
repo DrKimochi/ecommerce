@@ -13,14 +13,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MessageProvider {
     public static final String MSG_NOT_FOUND_ID = "error.service.entity.notfound.id";
+    public static final String MSG_NOT_FOUND_CATEGORY = "error.service.entity.notfound.category";
     public static final String MSG_NOT_FOUND_USER = "error.service.entity.notfound.username";
     public static final String MSG_EXISTS_EMAIL = "error.service.entity.exists.email";
     public static final String MSG_EXISTS_CATEGORY = "error.service.entity.exists.category";
     public static final String MSG_FORM_FIELD = "error.form.field";
+
+    public static final String MSG_LESS_THAN_ZERO = "error.form.field.min.zero";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
     public static final String MSG_CANNOT_TARGET_OTHERS =
             "error.forbidden.entity.cannot.target.others";
+
+    public static final String MSG_CANNOT_GET_INACTIVE =
+            "error.forbidden.product.cannot.get.inactive";
     public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";
 
     private final Locale locale = LocaleContextHolder.getLocale();

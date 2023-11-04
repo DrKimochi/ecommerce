@@ -2,6 +2,7 @@ package drk.shopamos.rest.repository;
 
 import static drk.shopamos.rest.mother.CategoryMother.FRUIT_CAT_ID;
 import static drk.shopamos.rest.mother.CategoryMother.MISC_CAT_ID;
+import static drk.shopamos.rest.mother.CategoryMother.SWORD_CAT_ID;
 import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -66,14 +67,14 @@ class CategoryRepositoryTest {
     @Test
     @DisplayName("deleteById - when ID exists then row is deleted")
     void deleteById_whenIdExists_thenDeleteRow() {
-        assertThat(testee.existsById(MISC_CAT_ID), is(true));
-        testee.deleteById(MISC_CAT_ID);
-        assertThat(testee.existsById(MISC_CAT_ID), is(false));
+        assertThat(testee.existsById(SWORD_CAT_ID), is(true));
+        testee.deleteById(SWORD_CAT_ID);
+        assertThat(testee.existsById(SWORD_CAT_ID), is(false));
     }
 
     @ParameterizedTest
     @ArgumentsSource(CategoryFindAllByAttributesArguments.class)
-    @DisplayName("findAllByAttributes - finds by name contains and case insensitive")
+    @DisplayName("findAllByAttributes - finds by name/description contains and case insensitive")
     void findAllByAttributes_findsByAttributes(String name, String description) {
         List<Category> foundCategories = testee.findAllByAttributes(name, description);
         assertThat(foundCategories.size(), is(1));
@@ -84,6 +85,6 @@ class CategoryRepositoryTest {
     @DisplayName("findAllByAttributes - returns all categories when attributes all null")
     void findAllByAttributes_returnsAllCategories() {
         List<Category> foundCategories = testee.findAllByAttributes(null, null);
-        assertThat(foundCategories.size(), is(2));
+        assertThat(foundCategories.size(), is(3));
     }
 }

@@ -1,5 +1,6 @@
 package drk.shopamos.rest.controller.assertion;
 
+import static drk.shopamos.rest.config.MessageProvider.MSG_LESS_THAN_ZERO;
 import static drk.shopamos.rest.mother.MessageMother.MSG_BODY_UNREADABLE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_PROMOTE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_TARGET_OTHERS;
@@ -28,6 +29,11 @@ import java.util.Optional;
 @Component
 public class ErrorResponseAssert {
     @Autowired private MessageProvider messageProvider;
+
+    public void priceField(ErrorResponse errorResponse) {
+        String message = messageProvider.getMessage(MSG_LESS_THAN_ZERO);
+        assertFormFieldError(errorResponse, "price", message);
+    }
 
     public void emailField(ErrorResponse errorResponse) {
         String message = messageProvider.getMessage(MSG_FIELD_EMAIL, "email");
