@@ -27,29 +27,29 @@ public class OrderMother {
 
     public static OrderStatus ORD_STATUS = OrderStatus.SUBMITTED;
 
-    public static Order buildOrderWithTwoItems() {
+    public static Order buildNewOrderWithTwoItems() {
         Order order = new Order();
-        order.setId(ORD_ID);
         order.setUser(buildAdminLuffy());
         order.setStatus(ORD_STATUS);
         order.setCreatedDate(ORD_CREATED_DATE);
         order.setUpdatedDate(ORD_UPDATED_DATE);
-        order.setOrderProducts(List.of(buildGoingMerryOrderProduct(), buildShusuiOrderProduct()));
+        order.setOrderProducts(
+                List.of(buildGoingMerryOrderProduct(order), buildShusuiOrderProduct(order)));
         return order;
     }
 
-    public static OrderProduct buildGoingMerryOrderProduct() {
+    public static OrderProduct buildGoingMerryOrderProduct(Order order) {
         OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setId(GMERRY_PROD_ORD_ID);
+        orderProduct.setOrder(order);
         orderProduct.setQuantity(GMERRY_PROD_ORD_QUANTITY);
         orderProduct.setUnitPrice(GMERRY_PROD_ORD_UNITPRICE);
         orderProduct.setProduct(buildGoingMerry());
         return orderProduct;
     }
 
-    public static OrderProduct buildShusuiOrderProduct() {
+    public static OrderProduct buildShusuiOrderProduct(Order order) {
         OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setId(SHUSUI_PROD_ORD_ID);
+        orderProduct.setOrder(order);
         orderProduct.setQuantity(SHUSUI_PROD_ORD_QUANTITY);
         orderProduct.setUnitPrice(SHUSUI_PROD_ORD_UNITPRICE);
         orderProduct.setProduct(buildShusui());

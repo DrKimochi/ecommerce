@@ -1,6 +1,5 @@
 package drk.shopamos.rest.controller.assertion;
 
-import static drk.shopamos.rest.config.MessageProvider.MSG_LESS_THAN_ZERO;
 import static drk.shopamos.rest.mother.MessageMother.MSG_BODY_UNREADABLE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_PROMOTE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_CANNOT_TARGET_OTHERS;
@@ -12,6 +11,7 @@ import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_PASSWORD;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FORM_FIELD;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
 import static drk.shopamos.rest.mother.MessageMother.MSG_PARAM_WRONG_TYPE;
+import static drk.shopamos.rest.mother.MessageMother.MSG_POSITIVE_VALUE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,7 +31,7 @@ public class ErrorResponseAssert {
     @Autowired private MessageProvider messageProvider;
 
     public void priceField(ErrorResponse errorResponse) {
-        String message = messageProvider.getMessage(MSG_LESS_THAN_ZERO);
+        String message = messageProvider.getMessage(MSG_POSITIVE_VALUE);
         assertFormFieldError(errorResponse, "price", message);
     }
 

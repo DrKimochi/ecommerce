@@ -5,6 +5,7 @@ public class MessageMother {
     public static final String MSG_FORM_FIELD = "error.form.field";
     public static final String MSG_FIELD_EMPTY = "error.form.field.empty";
     public static final String MSG_FIELD_EMAIL = "error.form.field.email";
+    public static final String MSG_POSITIVE_VALUE = "error.form.field.positive";
     public static final String MSG_FIELD_PASSWORD = "error.form.field.password";
     public static final String MSG_FIELD_CATEGORY = "error.form.field.category";
     public static final String MSG_FIELD_MAX_LENGTH = "error.form.field.maxlength";

@@ -18,8 +18,7 @@ public class MessageProvider {
     public static final String MSG_EXISTS_EMAIL = "error.service.entity.exists.email";
     public static final String MSG_EXISTS_CATEGORY = "error.service.entity.exists.category";
     public static final String MSG_FORM_FIELD = "error.form.field";
-
-    public static final String MSG_LESS_THAN_ZERO = "error.form.field.min.zero";
+    public static final String MSG_POSITIVE_VALUE = "error.form.field.positive";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
     public static final String MSG_CANNOT_TARGET_OTHERS =
@@ -28,6 +27,11 @@ public class MessageProvider {
     public static final String MSG_CANNOT_GET_INACTIVE =
             "error.forbidden.product.cannot.get.inactive";
     public static final String MSG_PARAM_WRONG_TYPE = "error.request.param.wrongtype";
+
+    public static final String MSG_ORDER_NO_ITEMS = "error.service.entity.order.items.notfound";
+    public static final String MSG_ORDER_ITEM_QTY_GT0 =
+            "error.service.entity.order.items.quantity.gt0";
+    public static final String MSG_USERNAME_REQUIRED = "error.service.entity.required.user";
 
     private final Locale locale = LocaleContextHolder.getLocale();
     private final MessageSource messageSource;

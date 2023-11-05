@@ -29,7 +29,10 @@ insert into "product" ("name", "description", "price", "image_url", "is_active",
 values('Treasure chest', 'Contains the One Piece. The pirate king''s treasure of unimaginable value', 10000.01, 'http://localImageRepo/onepiece.jpg', true, 'MISC');
 
 insert into "order" ("status", "user_id", "created_date", "updated_date")
-values('SUBMITTED', '1', '2023-11-03 12:30:00', '2023-11-04 13:00:01');
+values('SUBMITTED', '1', '2023-11-03 14:00:00', '2023-11-04 15:00:00');
+
+insert into "order" ("status", "user_id", "created_date", "updated_date")
+values('CANCELLED', '2', '2023-12-01 12:00:00', '2023-12-02 13:00:00');
 
 insert into "order_product" ("order_id", "product_id", "quantity", "unit_price")
 values(1,1,3,3493.83);

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,7 +28,7 @@ public class ProductRequest {
     private String description;
 
     @NotNull(message = "{error.form.field.empty}")
-    @Min(value = 0, message = "{error.form.field.min.zero}")
+    @Min(value = 0, message = "{error.form.field.positive}")
     private BigDecimal price;
 
     private String imageUrl;
