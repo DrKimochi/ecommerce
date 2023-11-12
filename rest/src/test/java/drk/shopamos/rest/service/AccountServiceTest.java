@@ -10,17 +10,14 @@ import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffyWithEncodedPwd;
 import static drk.shopamos.rest.mother.MessageMother.MSG_EXISTS_EMAIL;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
-import static drk.shopamos.rest.mother.MessageMother.RETURNED_MSG;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.model.entity.Account;
 import drk.shopamos.rest.repository.AccountRepository;
 import drk.shopamos.rest.service.exception.EntityExistsException;
@@ -40,7 +37,6 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 class AccountServiceTest extends ServiceTest {
     @Mock AccountRepository repository;
-    @Mock MessageProvider messageProvider;
     @Mock PasswordEncoder passwordEncoder;
     @InjectMocks AccountService testee;
 
@@ -57,13 +53,11 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("loadUserByUsername - throws exception when it cannot find the account by email")
     void loadUserByUsername_throwsExceptionWhenNotFound() {
         when(repository.findByEmail(VIVI_EMAIL)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_USER, VIVI_EMAIL)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                UsernameNotFoundException.class,
-                                () -> testee.loadUserByUsername(VIVI_EMAIL))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                UsernameNotFoundException.class,
+                () -> testee.loadUserByUsername(VIVI_EMAIL),
+                MSG_NOT_FOUND_USER,
+                VIVI_EMAIL);
     }
 
     @Test
@@ -71,11 +65,11 @@ class AccountServiceTest extends ServiceTest {
     void createAccount_throwsExceptionWhenAccountAlreadyExists() {
         Account luffy = buildAdminLuffy();
         when(repository.findByEmail(LUFFY_EMAIL)).thenReturn(Optional.of(new Account()));
-        when(messageProvider.getMessage(MSG_EXISTS_EMAIL, LUFFY_EMAIL)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityExistsException.class, () -> testee.createAccount(luffy))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityExistsException.class,
+                () -> testee.createAccount(luffy),
+                MSG_EXISTS_EMAIL,
+                LUFFY_EMAIL);
         verify(repository, times(0)).save(any());
     }
 
@@ -93,11 +87,11 @@ class AccountServiceTest extends ServiceTest {
     void updateAccount_throwsExceptionWhenIdDoesNotExist() {
         Account luffy = buildAdminLuffy();
         when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, LUFFY_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.updateAccount(luffy))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.updateAccount(luffy),
+                MSG_NOT_FOUND_ID,
+                LUFFY_ID);
         verify(repository, times(0)).save(any());
     }
 
@@ -115,20 +109,21 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("deleteAccount - throws exception when ID does not exist")
     void deleteAccount_throwsExceptionWhenIdDoesNotExist() {
         when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, LUFFY_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.deleteAccount(LUFFY_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
-        verify(repository, times(0)).save(any());
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.deleteAccount(LUFFY_ID),
+                MSG_NOT_FOUND_ID,
+                LUFFY_ID);
+        verify(repository, times(0)).delete(any());
     }
 
     @Test
     @DisplayName("deleteAccount - deletes by ID when the ID exists")
     void deleteAccount_deletesById_whenIdExists() {
-        when(repository.findById(LUFFY_ID)).thenReturn(Optional.of(new Account()));
+        Account luffy = buildAdminLuffy();
+        when(repository.findById(LUFFY_ID)).thenReturn(Optional.of(luffy));
         testee.deleteAccount(LUFFY_ID);
-        verify(repository).deleteById(LUFFY_ID);
+        verify(repository).delete(luffy);
     }
 
     @Test
@@ -144,11 +139,11 @@ class AccountServiceTest extends ServiceTest {
     @DisplayName("getAccount - throws exception when it is not found")
     void getAccount_throwsException_whenNotFound() {
         when(repository.findById(LUFFY_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, LUFFY_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.getAccount(LUFFY_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.getAccount(LUFFY_ID),
+                MSG_NOT_FOUND_ID,
+                LUFFY_ID);
     }
 
     @Test

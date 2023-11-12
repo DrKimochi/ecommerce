@@ -8,17 +8,14 @@ import static drk.shopamos.rest.mother.CategoryMother.buildFruitCategory;
 import static drk.shopamos.rest.mother.CategoryMother.buildMiscCategory;
 import static drk.shopamos.rest.mother.MessageMother.MSG_EXISTS_CATEGORY;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
-import static drk.shopamos.rest.mother.MessageMother.RETURNED_MSG;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.model.entity.Category;
 import drk.shopamos.rest.repository.CategoryRepository;
 import drk.shopamos.rest.service.exception.EntityExistsException;
@@ -34,22 +31,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-class CategoryServiceTest {
+class CategoryServiceTest extends ServiceTest {
 
     @Mock CategoryRepository repository;
-    @Mock MessageProvider messageProvider;
     @InjectMocks CategoryService testee;
 
     @Test
     @DisplayName("createCategory - throws exception when category already exists")
     void createCategory_throwsExceptionWhenCategoryAlreadyExists() {
         Category misc = buildMiscCategory();
-        when(messageProvider.getMessage(MSG_EXISTS_CATEGORY, MISC_CAT_ID)).thenReturn(RETURNED_MSG);
         when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.of(new Category()));
-        String exceptionMsg =
-                assertThrows(EntityExistsException.class, () -> testee.createCategory(misc))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityExistsException.class,
+                () -> testee.createCategory(misc),
+                MSG_EXISTS_CATEGORY,
+                MISC_CAT_ID);
         verify(repository, times(0)).save(any());
     }
 
@@ -67,11 +63,11 @@ class CategoryServiceTest {
     void updateCategory_throwsExceptionWhenIdDoesNotExist() {
         Category misc = buildMiscCategory();
         when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, MISC_CAT_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.updateCategory(misc))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.updateCategory(misc),
+                MSG_NOT_FOUND_ID,
+                MISC_CAT_ID);
         verify(repository, times(0)).save(any());
     }
 
@@ -88,33 +84,32 @@ class CategoryServiceTest {
     @DisplayName("deleteCategory - throws exception when ID does not exist")
     void deleteCategory_throwsExceptionWhenIdDoesNotExist() {
         when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, MISC_CAT_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.deleteCategory(MISC_CAT_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.deleteCategory(MISC_CAT_ID),
+                MSG_NOT_FOUND_ID,
+                MISC_CAT_ID);
         verify(repository, times(0)).save(any());
     }
 
     @Test
     @DisplayName("deleteCategory - deletes by ID when the ID exists")
     void deleteCategory_deletesById_whenIdExists() {
-        when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.of(new Category()));
+        Category existingCategory = buildFruitCategory();
+        when(repository.findById(MISC_CAT_ID)).thenReturn(Optional.of(existingCategory));
         testee.deleteCategory(MISC_CAT_ID);
-        verify(repository).deleteById(MISC_CAT_ID);
+        verify(repository).delete(existingCategory);
     }
 
     @Test
     @DisplayName("getCategory - throws exception when category not found")
     void getCategory_throwsExceptionWhenNotFound() {
         when(repository.findById(FRUIT_CAT_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, FRUIT_CAT_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.getCategory(FRUIT_CAT_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.getCategory(FRUIT_CAT_ID),
+                MSG_NOT_FOUND_ID,
+                FRUIT_CAT_ID);
     }
 
     @Test

@@ -4,7 +4,6 @@ import static drk.shopamos.rest.config.MessageProvider.MSG_NOT_FOUND_ID;
 import static drk.shopamos.rest.mother.CategoryMother.SHIP_CAT_ID;
 import static drk.shopamos.rest.mother.CategoryMother.buildShipCategory;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_CATEGORY;
-import static drk.shopamos.rest.mother.MessageMother.RETURNED_MSG;
 import static drk.shopamos.rest.mother.ProductMother.TSUNNY_PROD_DESC;
 import static drk.shopamos.rest.mother.ProductMother.TSUNNY_PROD_ID;
 import static drk.shopamos.rest.mother.ProductMother.TSUNNY_PROD_NAME;
@@ -12,11 +11,9 @@ import static drk.shopamos.rest.mother.ProductMother.buildThousandSunny;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.model.entity.Category;
 import drk.shopamos.rest.model.entity.Product;
 import drk.shopamos.rest.repository.CategoryRepository;
@@ -35,21 +32,21 @@ import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceTest {
+class ProductServiceTest extends ServiceTest {
 
     @Mock CategoryRepository categoryRepository;
     @Mock ProductRepository productRepository;
-    @Mock MessageProvider messageProvider;
     @InjectMocks ProductService testee;
 
     @Test
     @DisplayName("createProduct - throws entity not found when category does not exist")
     void createProduct_whenCategoryNotFound_throwsException() {
         Product product = buildThousandSunny();
-        when(messageProvider.getMessage(MSG_NOT_FOUND_CATEGORY, SHIP_CAT_ID))
-                .thenReturn(RETURNED_MSG);
-        assertThrows(
-                EntityNotFoundException.class, () -> testee.createProduct(SHIP_CAT_ID, product));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.createProduct(SHIP_CAT_ID, product),
+                MSG_NOT_FOUND_CATEGORY,
+                SHIP_CAT_ID);
     }
 
     @Test
@@ -72,13 +69,11 @@ class ProductServiceTest {
         Product product = buildThousandSunny();
 
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, TSUNNY_PROD_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.updateProduct(SHIP_CAT_ID, product))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.updateProduct(SHIP_CAT_ID, product),
+                MSG_NOT_FOUND_ID,
+                TSUNNY_PROD_ID);
     }
 
     @Test
@@ -86,14 +81,11 @@ class ProductServiceTest {
     void updateProduct_whenCategoryNotFound_throwsException() {
         Product product = buildThousandSunny();
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.of(product));
-        when(messageProvider.getMessage(MSG_NOT_FOUND_CATEGORY, SHIP_CAT_ID))
-                .thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.updateProduct(SHIP_CAT_ID, product))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.updateProduct(SHIP_CAT_ID, product),
+                MSG_NOT_FOUND_CATEGORY,
+                SHIP_CAT_ID);
     }
 
     @Test
@@ -116,13 +108,11 @@ class ProductServiceTest {
     void deleteProduct_whenProductIdNotFound_throwsException() {
 
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, TSUNNY_PROD_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.deleteProduct(TSUNNY_PROD_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.deleteProduct(TSUNNY_PROD_ID),
+                MSG_NOT_FOUND_ID,
+                TSUNNY_PROD_ID);
     }
 
     @Test
@@ -131,7 +121,7 @@ class ProductServiceTest {
         Product product = buildThousandSunny();
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.of(product));
         testee.deleteProduct(TSUNNY_PROD_ID);
-        verify(productRepository).deleteById(TSUNNY_PROD_ID);
+        verify(productRepository).delete(product);
     }
 
     @Test
@@ -147,11 +137,11 @@ class ProductServiceTest {
     @DisplayName("getProduct - throws exception when Product Id does not exist")
     void getProduct_throwsExceptionWhenProductIdDoesNotExist() {
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, TSUNNY_PROD_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(EntityNotFoundException.class, () -> testee.getProduct(TSUNNY_PROD_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.getProduct(TSUNNY_PROD_ID),
+                MSG_NOT_FOUND_ID,
+                TSUNNY_PROD_ID);
     }
 
     @Test
@@ -167,13 +157,11 @@ class ProductServiceTest {
     @DisplayName("getActiveProduct - throws exception when Product Id does not exist")
     void getActiveProduct_throwsExceptionWhenProductIdDoesNotExist() {
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.empty());
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, TSUNNY_PROD_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.getActiveProduct(TSUNNY_PROD_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.getActiveProduct(TSUNNY_PROD_ID),
+                MSG_NOT_FOUND_ID,
+                TSUNNY_PROD_ID);
     }
 
     @Test
@@ -182,13 +170,11 @@ class ProductServiceTest {
         Product product = buildThousandSunny();
         product.setActive(false);
         when(productRepository.findById(TSUNNY_PROD_ID)).thenReturn(Optional.of(product));
-        when(messageProvider.getMessage(MSG_NOT_FOUND_ID, TSUNNY_PROD_ID)).thenReturn(RETURNED_MSG);
-        String exceptionMsg =
-                assertThrows(
-                                EntityNotFoundException.class,
-                                () -> testee.getActiveProduct(TSUNNY_PROD_ID))
-                        .getMessage();
-        assertThat(RETURNED_MSG, is(exceptionMsg));
+        assertException(
+                EntityNotFoundException.class,
+                () -> testee.getActiveProduct(TSUNNY_PROD_ID),
+                MSG_NOT_FOUND_ID,
+                TSUNNY_PROD_ID);
     }
 
     @Test
