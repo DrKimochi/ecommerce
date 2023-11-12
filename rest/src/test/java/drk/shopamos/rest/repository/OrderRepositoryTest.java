@@ -6,7 +6,7 @@ import static drk.shopamos.rest.mother.AccountMother.LUFFY_NAME;
 import static drk.shopamos.rest.mother.OrderMother.ORD_CREATED_DATE;
 import static drk.shopamos.rest.mother.OrderMother.ORD_STATUS;
 import static drk.shopamos.rest.mother.OrderMother.ORD_UPDATED_DATE;
-import static drk.shopamos.rest.mother.OrderMother.buildNewOrderWithTwoItems;
+import static drk.shopamos.rest.mother.OrderMother.buildSwordsAndShipOrder;
 import static drk.shopamos.rest.mother.ProductMother.GMERRY_PROD_NAME;
 import static drk.shopamos.rest.mother.ProductMother.SHUSUI_PROD_NAME;
 import static drk.shopamos.rest.mother.TimeMother.DECEMBER_2ND_1PM;
@@ -48,7 +48,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when valid data then save to db")
     void save_whenValidData_saveToDb() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         testee.saveAndFlush(order);
         assertOrder(order);
     }
@@ -56,7 +56,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when product ID is repeated on same order then throw exception")
     void save_whenRepeatedProductId_thenThrowException() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         order.getOrderProducts().get(0).getProduct().setId(1);
         order.getOrderProducts().get(1).getProduct().setId(1);
         assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(order));
@@ -65,7 +65,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when status is null then throw exception")
     void save_whenNullStatus_thenThrowException() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         order.setStatus(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(order));
     }
@@ -73,7 +73,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when createdDate is null then throw exception")
     void save_whenCreatedDateNull_thenThrowException() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         order.setCreatedDate(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(order));
     }
@@ -81,7 +81,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when updatedDate is null then throw exception")
     void save_whenUpdatedDateNull_thenThrowException() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         order.setUpdatedDate(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(order));
     }
@@ -89,7 +89,7 @@ class OrderRepositoryTest {
     @Test
     @DisplayName("save - when user is null then throw exception")
     void save_whenUserNull_thenThrowException() {
-        Order order = buildNewOrderWithTwoItems();
+        Order order = buildSwordsAndShipOrder();
         order.setUser(null);
         assertThrows(DataIntegrityViolationException.class, () -> testee.saveAndFlush(order));
     }
@@ -115,7 +115,7 @@ class OrderRepositoryTest {
 
     @Test
     @DisplayName("findById - user and orderProduct are associated and lazy loaded")
-    void findById_user_and_orderProduct_lazyLoaded() {
+    void findById_userAndOrderProduct_lazyLoaded() {
         persistenceUnitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
 
         Order order = testee.findById(1).orElseThrow();

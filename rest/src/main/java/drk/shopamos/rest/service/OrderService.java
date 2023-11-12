@@ -2,7 +2,10 @@ package drk.shopamos.rest.service;
 
 import static drk.shopamos.rest.config.MessageProvider.MSG_ORDER_ITEM_QTY_GT0;
 import static drk.shopamos.rest.config.MessageProvider.MSG_ORDER_NO_ITEMS;
+import static drk.shopamos.rest.config.MessageProvider.MSG_ORDER_STATUS_REQUIRED;
 import static drk.shopamos.rest.config.MessageProvider.MSG_USERNAME_REQUIRED;
+
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 import static java.util.Objects.isNull;
 
@@ -21,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -57,6 +59,7 @@ public class OrderService extends BaseService {
     }
 
     public Order updateOrder(Integer orderId, OrderStatus newStatus) {
+        validateOrderStatus(newStatus);
         Order order = getOrder(orderId);
         order.setStatus(newStatus);
         return orderRepository.save(order);
@@ -78,14 +81,13 @@ public class OrderService extends BaseService {
             LocalDateTime dateTo,
             List<Integer> productIds) {
 
-        List<Integer> nonNullProductIds = productIds != null ? productIds : new ArrayList<>();
         return orderRepository.findAllByAttributes(
                 username,
                 orderStatus,
                 dateFrom,
                 dateTo,
-                nonNullProductIds,
-                nonNullProductIds.size());
+                emptyIfNull(productIds),
+                emptyIfNull(productIds).size());
     }
 
     private List<OrderProduct> createOrderProducts(List<ProductQuantity> productQuantities) {
@@ -118,6 +120,12 @@ public class OrderService extends BaseService {
         }
         if (!accountRepository.existsById(user.getId())) {
             throw anEntityNotFoundException(user.getId()).get();
+        }
+    }
+
+    private void validateOrderStatus(OrderStatus orderStatus) {
+        if (isNull(orderStatus)) {
+            throw aBadDataException(MSG_ORDER_STATUS_REQUIRED).get();
         }
     }
 

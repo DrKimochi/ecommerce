@@ -9,36 +9,49 @@ import static drk.shopamos.rest.mother.TimeMother.TOMORROW;
 import drk.shopamos.rest.model.entity.Order;
 import drk.shopamos.rest.model.entity.OrderProduct;
 import drk.shopamos.rest.model.enumerable.OrderStatus;
+import drk.shopamos.rest.service.model.ProductQuantity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrderMother {
     public static Integer ORD_ID = 2;
     public static Integer SHUSUI_PROD_ORD_ID = 1;
     public static Integer SHUSUI_PROD_ORD_QUANTITY = 3;
-    public static BigDecimal SHUSUI_PROD_ORD_UNITPRICE = BigDecimal.valueOf(420.69);
+    public static BigDecimal SHUSUI_PROD_ORD_UNITPRICE = BigDecimal.valueOf(3493.83);
     public static Integer GMERRY_PROD_ORD_ID = 2;
     public static Integer GMERRY_PROD_ORD_QUANTITY = 1;
-    public static BigDecimal GMERRY_PROD_ORD_UNITPRICE = BigDecimal.valueOf(1337.42);
+    public static BigDecimal GMERRY_PROD_ORD_UNITPRICE = BigDecimal.valueOf(9998.99);
     public static LocalDateTime ORD_CREATED_DATE = TODAY;
     public static LocalDateTime ORD_UPDATED_DATE = TOMORROW;
 
     public static OrderStatus ORD_STATUS = OrderStatus.SUBMITTED;
 
-    public static Order buildNewOrderWithTwoItems() {
+    public static Order buildSwordsAndShipOrder() {
+        return buildSwordsAndShipOrder(ORD_STATUS);
+    }
+
+    public static Order buildSwordsAndShipOrder(OrderStatus orderStatus) {
         Order order = new Order();
         order.setUser(buildAdminLuffy());
-        order.setStatus(ORD_STATUS);
+        order.setStatus(orderStatus);
         order.setCreatedDate(ORD_CREATED_DATE);
         order.setUpdatedDate(ORD_UPDATED_DATE);
         order.setOrderProducts(
-                List.of(buildGoingMerryOrderProduct(order), buildShusuiOrderProduct(order)));
+                List.of(buildShusuiOrderProduct(order), buildGoingMerryOrderProduct(order)));
         return order;
     }
 
-    public static OrderProduct buildGoingMerryOrderProduct(Order order) {
+    public static List<ProductQuantity> buildSwordsAndShipQuantities() {
+        ArrayList<ProductQuantity> productQuantities = new ArrayList<>();
+        productQuantities.add(new ProductQuantity(SHUSUI_PROD_ORD_ID, 3));
+        productQuantities.add(new ProductQuantity(GMERRY_PROD_ORD_ID, 1));
+        return productQuantities;
+    }
+
+    private static OrderProduct buildGoingMerryOrderProduct(Order order) {
         OrderProduct orderProduct = new OrderProduct();
         orderProduct.setOrder(order);
         orderProduct.setQuantity(GMERRY_PROD_ORD_QUANTITY);
@@ -47,7 +60,7 @@ public class OrderMother {
         return orderProduct;
     }
 
-    public static OrderProduct buildShusuiOrderProduct(Order order) {
+    private static OrderProduct buildShusuiOrderProduct(Order order) {
         OrderProduct orderProduct = new OrderProduct();
         orderProduct.setOrder(order);
         orderProduct.setQuantity(SHUSUI_PROD_ORD_QUANTITY);

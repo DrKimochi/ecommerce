@@ -19,6 +19,9 @@ public class MessageProvider {
     public static final String MSG_EXISTS_CATEGORY = "error.service.entity.exists.category";
     public static final String MSG_FORM_FIELD = "error.form.field";
     public static final String MSG_POSITIVE_VALUE = "error.form.field.positive";
+
+    public static final String MSG_ORDER_STATUS_REQUIRED =
+            "error.service.entity.required.orderstatus";
     public static final String MSG_BODY_UNREADABLE = "error.request.body.unreadable";
     public static final String MSG_CANNOT_PROMOTE = "error.forbidden.entity.cannot.promote";
     public static final String MSG_CANNOT_TARGET_OTHERS =
