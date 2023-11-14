@@ -1,11 +1,15 @@
 package drk.shopamos.rest.mother;
 
 import static drk.shopamos.rest.mother.AccountMother.buildAdminLuffy;
+import static drk.shopamos.rest.mother.ProductMother.GMERRY_PROD_ID;
+import static drk.shopamos.rest.mother.ProductMother.SHUSUI_PROD_ID;
 import static drk.shopamos.rest.mother.ProductMother.buildGoingMerry;
 import static drk.shopamos.rest.mother.ProductMother.buildShusui;
 import static drk.shopamos.rest.mother.TimeMother.TODAY;
 import static drk.shopamos.rest.mother.TimeMother.TOMORROW;
 
+import drk.shopamos.rest.controller.request.OrderRequest;
+import drk.shopamos.rest.controller.request.ProductQuantityRequest;
 import drk.shopamos.rest.model.entity.Order;
 import drk.shopamos.rest.model.entity.OrderProduct;
 import drk.shopamos.rest.model.enumerable.OrderStatus;
@@ -49,6 +53,21 @@ public class OrderMother {
         productQuantities.add(new ProductQuantity(SHUSUI_PROD_ORD_ID, 3));
         productQuantities.add(new ProductQuantity(GMERRY_PROD_ORD_ID, 1));
         return productQuantities;
+    }
+
+    public static OrderRequest buildSwordsAndShipOrderRequest() {
+        return OrderRequest.builder()
+                .productQuantities(
+                        List.of(
+                                ProductQuantityRequest.builder()
+                                        .id(SHUSUI_PROD_ID)
+                                        .quantity(SHUSUI_PROD_ORD_QUANTITY)
+                                        .build(),
+                                ProductQuantityRequest.builder()
+                                        .id(GMERRY_PROD_ID)
+                                        .quantity(GMERRY_PROD_ORD_QUANTITY)
+                                        .build()))
+                .build();
     }
 
     private static OrderProduct buildGoingMerryOrderProduct(Order order) {
