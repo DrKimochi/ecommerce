@@ -31,4 +31,5 @@ public class MessageMother {
             "error.service.entity.order.items.quantity.gt0";
     public static final String MSG_USERNAME_REQUIRED = "error.service.entity.required.user";
     public static final String RETURNED_MSG = "the returned exception message";
+    public static final String MSG_INVALID_ENUM = "error.form.field.enum";
 }

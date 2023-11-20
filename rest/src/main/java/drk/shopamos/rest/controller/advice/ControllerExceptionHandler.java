@@ -2,9 +2,12 @@ package drk.shopamos.rest.controller.advice;
 
 import static drk.shopamos.rest.config.MessageProvider.MSG_BODY_UNREADABLE;
 import static drk.shopamos.rest.config.MessageProvider.MSG_FORM_FIELD;
+import static drk.shopamos.rest.config.MessageProvider.MSG_INVALID_ENUM;
 import static drk.shopamos.rest.config.MessageProvider.MSG_PARAM_WRONG_TYPE;
 
 import static java.util.Objects.requireNonNull;
+
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 import drk.shopamos.rest.config.MessageProvider;
 import drk.shopamos.rest.controller.exception.IllegalDataException;
@@ -22,6 +25,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -48,10 +56,19 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseBody
-    ErrorResponse handleHttpMessageNotReadableException() {
-        return ErrorResponse.builder()
-                .message(messageProvider.getMessage(MSG_BODY_UNREADABLE))
-                .build();
+    ErrorResponse handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        Optional<String> invalidEnum = getInvalidEnum(exception);
+        String message;
+        if (invalidEnum.isPresent()) {
+            message =
+                    messageProvider.getMessage(
+                            MSG_INVALID_ENUM,
+                            invalidEnum.get(),
+                            getEnumValidNames(exception).toString());
+        } else {
+            message = messageProvider.getMessage(MSG_BODY_UNREADABLE);
+        }
+        return ErrorResponse.builder().message(message).build();
     }
 
     @ExceptionHandler(BusinessException.class)
@@ -83,5 +100,23 @@ public class ControllerExceptionHandler {
         return ErrorResponse.builder()
                 .message(messageProvider.getMessage(MSG_PARAM_WRONG_TYPE, value, type))
                 .build();
+    }
+
+    private Optional<String> getInvalidEnum(Throwable throwable) {
+        return Optional.ofNullable(throwable.getCause())
+                .filter(InvalidFormatException.class::isInstance)
+                .map(InvalidFormatException.class::cast)
+                .map(InvalidFormatException::getValue)
+                .map(Object::toString);
+    }
+
+    private List<String> getEnumValidNames(Throwable throwable) {
+        return Optional.ofNullable(throwable.getCause())
+                .filter(InvalidFormatException.class::isInstance)
+                .map(InvalidFormatException.class::cast)
+                .map(InvalidFormatException::getTargetType)
+                .map(Class::getEnumConstants)
+                .map(enums -> Arrays.stream(enums).map(Object::toString).toList())
+                .orElse(new ArrayList<>());
     }
 }

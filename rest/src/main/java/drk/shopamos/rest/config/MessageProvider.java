@@ -35,6 +35,7 @@ public class MessageProvider {
     public static final String MSG_ORDER_ITEM_QTY_GT0 =
             "error.service.entity.order.items.quantity.gt0";
     public static final String MSG_USERNAME_REQUIRED = "error.service.entity.required.user";
+    public static final String MSG_INVALID_ENUM = "error.form.field.enum";
 
     private final Locale locale = LocaleContextHolder.getLocale();
     private final MessageSource messageSource;

@@ -9,6 +9,7 @@ import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_EMPTY;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_MAX_LENGTH;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FIELD_PASSWORD;
 import static drk.shopamos.rest.mother.MessageMother.MSG_FORM_FIELD;
+import static drk.shopamos.rest.mother.MessageMother.MSG_INVALID_ENUM;
 import static drk.shopamos.rest.mother.MessageMother.MSG_NOT_FOUND_ID;
 import static drk.shopamos.rest.mother.MessageMother.MSG_PARAM_WRONG_TYPE;
 import static drk.shopamos.rest.mother.MessageMother.MSG_POSITIVE_VALUE;
@@ -23,6 +24,7 @@ import drk.shopamos.rest.controller.response.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -30,9 +32,20 @@ import java.util.Optional;
 public class ErrorResponseAssert {
     @Autowired private MessageProvider messageProvider;
 
-    public void priceField(ErrorResponse errorResponse) {
+    public void enumField(
+            ErrorResponse errorResponse, String value, Class<? extends Enum<?>> enumType) {
+
+        String message =
+                messageProvider.getMessage(
+                        MSG_INVALID_ENUM,
+                        value,
+                        Arrays.asList(enumType.getEnumConstants()).toString());
+        assertThat(errorResponse.getMessage(), is(message));
+    }
+
+    public void positiveField(ErrorResponse errorResponse, String fieldName) {
         String message = messageProvider.getMessage(MSG_POSITIVE_VALUE);
-        assertFormFieldError(errorResponse, "price", message);
+        assertFormFieldError(errorResponse, fieldName, message);
     }
 
     public void emailField(ErrorResponse errorResponse) {

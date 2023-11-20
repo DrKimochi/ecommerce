@@ -56,7 +56,11 @@ public class OrderMother {
     }
 
     public static OrderRequest buildSwordsAndShipOrderRequest() {
+        return buildSwordsAndShipOrderRequest(null);
+    }
+    public static OrderRequest buildSwordsAndShipOrderRequest(OrderStatus orderStatus) {
         return OrderRequest.builder()
+                .status(orderStatus)
                 .productQuantities(
                         List.of(
                                 ProductQuantityRequest.builder()

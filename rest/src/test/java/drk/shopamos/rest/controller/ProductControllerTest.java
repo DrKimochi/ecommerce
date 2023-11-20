@@ -98,7 +98,7 @@ public class ProductControllerTest extends ControllerTest {
                         .thenExpectStatus(BAD_REQUEST)
                         .getResponseBody(ErrorResponse.class);
 
-        errorResponseAssert.priceField(errorResponse);
+        errorResponseAssert.positiveField(errorResponse, "price");
     }
 
     @ParameterizedTest
